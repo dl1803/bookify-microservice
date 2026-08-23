@@ -26,10 +26,19 @@ public class AuthViewModel extends ViewModel {
     private final AuthRepository authRepository;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
+    private String registerEmail = "";
+    private String resetOtp = "";
+
+    private final MutableLiveData<Boolean> verifySuccess = new MutableLiveData<>(false);
+
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>(null);
     private final MutableLiveData<UserModel> authSuccessUser = new MutableLiveData<>(null);
     private final MutableLiveData<Boolean> registerSuccess = new MutableLiveData<>(false);
+
+    private final MutableLiveData<Boolean> forgotpPasswordSuccess = new MutableLiveData<>(false);
+
+    private final MutableLiveData<Boolean> resetPasswordSuccess = new MutableLiveData<>(false);
 
     @Inject
     public AuthViewModel(AuthRepository authRepository) {
@@ -56,6 +65,36 @@ public class AuthViewModel extends ViewModel {
 
     public LiveData<Boolean> getRegisterSuccess() {
         return registerSuccess;
+    }
+
+    public LiveData<Boolean> getVerifySuccess() {
+        return verifySuccess;
+    }
+
+    public String getRegisterEmail() {
+        return registerEmail;
+    }
+
+    public LiveData<Boolean> getForgotPasswordSuccess() {
+        return forgotpPasswordSuccess;
+    }
+
+    // Giuúp reset trạng thái của forgot password (không bị re-trigger khi user chuyển sang verify
+    // mà user bấm back nếu kh set lại false nó tự động nhảy sang verify 1l nữa)
+    public void resetForgotPasswordState() {
+        forgotpPasswordSuccess.setValue(false);
+    }
+
+    public LiveData<Boolean> getResetPasswordSuccess() {
+        return resetPasswordSuccess;
+    }
+
+    public void saveResetOtp(String otp) {
+        this.resetOtp = otp;
+    }
+
+    public void resetResetPasswordState() {
+        resetPasswordSuccess.setValue(false);
     }
 
     public void login(String username, String password) {
@@ -165,6 +204,9 @@ public class AuthViewModel extends ViewModel {
 
         String formattedDob = formatDob(dob);
 
+        this.registerEmail = email;
+
+
         UserCreationRequest request = new UserCreationRequest(
                 username, password, email, firstName, lastName, formattedDob, city
         );
@@ -221,5 +263,125 @@ public class AuthViewModel extends ViewModel {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public void verifyEmail(String otp){
+        if (otp == null || otp.trim().isEmpty()) {
+            errorMessage.setValue("Please enter all 4 OTP numbers");
+            return;
+        }
+
+        isLoading.setValue(true);
+        errorMessage.setValue(null);
+
+        compositeDisposable.add(
+                authRepository.verifyEmail(registerEmail, otp)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    isLoading.setValue(false);
+                                    if (response.getCode() == 1000) {
+                                        verifySuccess.setValue(true);
+                                    } else {
+                                        errorMessage.setValue(response.getMessage());
+                                    }
+                                },
+                                throwable -> {
+                                    isLoading.setValue(false);
+                                    errorMessage.setValue(throwable.getMessage());
+                                }
+                        )
+        );
+    }
+
+    public void resendOtp(){
+        isLoading.setValue(true);
+        compositeDisposable.add(
+                authRepository.resendVerification(registerEmail)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    isLoading.setValue(false);
+                                    if (response.getCode() != 1000) {
+                                        errorMessage.setValue(response.getMessage());
+                                    }
+                                },
+                                throwable -> {
+                                    isLoading.setValue(false);
+                                    errorMessage.setValue(throwable.getMessage());
+                                }
+                        )
+        );
+    }
+
+    public void forgotPassword(String email){
+        if (email == null || email.trim().isEmpty()){
+            errorMessage.setValue("Please enter a valid email");
+            return;
+        }
+        isLoading.setValue(true);
+        errorMessage.setValue(null);
+
+        this.registerEmail = email;
+
+        compositeDisposable.add(
+                authRepository.forgotPassword(email)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                response -> {
+                                    isLoading.setValue(false);
+                                    if (response.getCode() == 1000){
+                                        forgotpPasswordSuccess.setValue(true);
+                                    } else {
+                                        errorMessage.setValue(response.getMessage());
+                                    }
+                                },
+                                throwable -> {
+                                    isLoading.setValue(false);
+                                    errorMessage.setValue(throwable.getMessage());
+                                    })
+        );
+    }
+
+    public void resetPassword(String newPassword, String confirmPassword) {
+        if (resetOtp == null || resetOtp.trim().isEmpty()) {
+            errorMessage.setValue("OTP Code invalid");
+            return;
+        }
+        if (newPassword == null || newPassword.length() < 6) {
+            errorMessage.setValue("Password must be at least 6 characters");
+            return;
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
+            errorMessage.setValue("Passwords do not match");
+            return;
+        }
+
+        isLoading.setValue(true);
+        errorMessage.setValue(null);
+
+        compositeDisposable.add(
+                authRepository.resetPassword(registerEmail, resetOtp, newPassword)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        response -> {
+                            isLoading.setValue(false);
+                            if (response.getCode() == 1000) {
+                                resetPasswordSuccess.setValue(true);
+                            } else {
+                                errorMessage.setValue(response.getMessage());
+                            }
+                            },
+                        throwable -> {
+                            isLoading.setValue(false);
+                            errorMessage.setValue(throwable.getMessage());
+                        })
+        );
+
     }
 }

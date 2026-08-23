@@ -17,6 +17,7 @@ glide = "4.16.0"
 pinview = "1.4.4"
 navigationFragment = "2.9.8"
 navigationUi = "2.9.8"
+shimmer = "0.5.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -40,6 +41,7 @@ glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", versi
 pinview = { group = "io.github.chaosleung", name = "pinview", version.ref = "pinview" }
 navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigationFragment" }
 navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigationUi" }
+shimmer = { group = "com.facebook.shimmer", name = "shimmer", version.ref = "shimmer" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

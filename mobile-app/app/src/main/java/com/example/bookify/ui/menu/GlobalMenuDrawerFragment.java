@@ -115,7 +115,7 @@ public class GlobalMenuDrawerFragment extends DialogFragment {
             if (getActivity() != null) {
                 authRepository.logout();
                 showToast(getString(R.string.menu_logout) + " successful");
-                android.content.Intent intent = new android.content.Intent(getActivity(), com.example.bookify.ui.auth.LoginActivity.class);
+                android.content.Intent intent = new android.content.Intent(getActivity(), com.example.bookify.ui.auth.AuthActivity.class);
                 intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 getActivity().finish();
