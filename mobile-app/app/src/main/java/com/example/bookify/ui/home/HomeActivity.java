@@ -111,7 +111,7 @@ public class HomeActivity extends AppCompatActivity {
     private void performLogout() {
         authRepository.logout();
         Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(HomeActivity.this, com.example.bookify.ui.auth.LoginActivity.class);
+        Intent intent = new Intent(HomeActivity.this, com.example.bookify.ui.auth.AuthViewModel.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();

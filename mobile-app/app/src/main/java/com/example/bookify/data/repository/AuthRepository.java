@@ -5,6 +5,10 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.bookify.data.model.UserModel;
 import com.example.bookify.data.remote.api.IdentityApiService;
+import com.example.bookify.data.remote.dto.ForgotPasswordRequest;
+import com.example.bookify.data.remote.dto.ResendVerificationRequest;
+import com.example.bookify.data.remote.dto.ResetPasswordRequest;
+import com.example.bookify.data.remote.dto.VerifyEmailRequest;
 import com.example.bookify.utils.TokenManager;
 import com.example.bookify.data.remote.dto.ApiResponse;
 import com.example.bookify.data.remote.dto.AuthenticationRequest;
@@ -64,5 +68,21 @@ public class AuthRepository {
     public void logout() {
         tokenManager.clearToken();
         currentUserLiveData.setValue(null);
+    }
+
+    public Single<ApiResponse<Void>> verifyEmail(String email, String otp) {
+        return identityApiService.verifyEmail(new VerifyEmailRequest(email, otp));
+    }
+
+    public Single<ApiResponse<Void>> resendVerification(String email) {
+        return identityApiService.resendVerification(new ResendVerificationRequest(email));
+    }
+
+    public Single<ApiResponse<Void>> forgotPassword(String email) {
+        return identityApiService.forgotPassword(new ForgotPasswordRequest(email));
+    }
+
+    public Single<ApiResponse<Void>> resetPassword(String email, String otp, String newPassword) {
+        return identityApiService.resetPassword(new ResetPasswordRequest(email, otp, newPassword));
     }
 }

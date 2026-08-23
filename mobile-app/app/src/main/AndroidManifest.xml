@@ -17,7 +17,7 @@
         android:theme="@style/Theme.Bookify"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".ui.auth.LoginActivity"
+            android:name=".ui.auth.AuthActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -26,10 +26,6 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".ui.auth.RegisterActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".ui.home.HomeActivity"
