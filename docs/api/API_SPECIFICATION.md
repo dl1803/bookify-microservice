@@ -145,6 +145,14 @@ Tất cả API response đều dùng cấu trúc `ApiResponse<T>`:
 | `1032` | MESSAGE_EDIT_EXPIRED | 400 | Đã quá thời gian cho phép chỉnh sửa tin nhắn |
 | `1033` | INVALID_OTP | 400 | OTP không hợp lệ hoặc đã hết hạn |
 | `1034` | OTP_EXPIRED | 400 | OTP hết hạn |
+| `1035` | USER_NOT_VERIFIED | 403 | Email chưa xác thực |
+| `1036` | USER_ALREADY_VERIFIED | 400 | Email đã xác thực |
+| `1037` | OTP_SEND_COOLDOWN | 429 | Vui lòng chờ trước khi yêu cầu OTP mới |
+| `1038` | TOO_MANY_OTP_ATTEMPTS | 400 | Số lần nhập OTP quá nhiều |
+| `1039` | INVALID_GOOGLE_TOKEN | 400 | Google token không hợp lệ |
+| `1040` | GOOGLE_AUTH_FAILED | 500 | Xác thực Google thất bại |
+| `1041` | ACCOUNT_LINKED_TO_DIFFERENT_PROVIDER | 409 | Tài khoản đã được liên kết với nhà cung cấp khác |
+
 | `9999` | UNCATEGORIZED_EXCEPTION | 500 | Lỗi hệ thống không xác định |
 
 ---

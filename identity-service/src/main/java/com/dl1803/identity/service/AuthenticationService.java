@@ -1,18 +1,17 @@
 package com.dl1803.identity.service;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.Optional;
-import java.util.StringJoiner;
-import java.util.UUID;
+import java.util.*;
 
 import jakarta.transaction.Transactional;
-import lombok.Data;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,11 +24,19 @@ import com.dl1803.identity.dto.request.*;
 import com.dl1803.identity.dto.response.AuthenticationResponse;
 import com.dl1803.identity.dto.response.IntrospectResponse;
 import com.dl1803.identity.entity.InvalidatedToken;
+import com.dl1803.identity.entity.Role;
 import com.dl1803.identity.entity.User;
+import com.dl1803.identity.enums.AuthProvider;
 import com.dl1803.identity.exception.AppException;
 import com.dl1803.identity.exception.ErrorCode;
 import com.dl1803.identity.repository.InvalidatedRepository;
+import com.dl1803.identity.repository.RoleRepository;
 import com.dl1803.identity.repository.UserRepository;
+import com.dl1803.identity.repository.httpclient.ProfileClient;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -69,12 +76,20 @@ public class AuthenticationService {
 
     KafkaTemplate<String, Object> kafkaTemplate;
 
+    @Value("${google.client-id}")
+    @NonFinal
+    String googleClientId;
+
+    ProfileClient profileClient;
+
+    RoleRepository roleRepository;
+
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
         var token = request.getToken();
 
         boolean isValid = true;
         try {
-            verifyToken(token, false);
+            verifyToken(token);
         } catch (AppException e) {
             isValid = false;
         }
@@ -92,19 +107,31 @@ public class AuthenticationService {
             throw new AppException(ErrorCode.USER_NOT_VERIFIED);
         }
 
+        // Kh cho phép user login bằng form khi đã login bằng GG (chỉ cho một chiều)
+        if (AuthProvider.GOOGLE.equals(user.getAuthProvider()) && user.getPassword() == null) {
+            throw new AppException(ErrorCode.ACCOUNT_LINKED_TO_DIFFERENT_PROVIDER);
+        }
+
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (!authenticated) throw new AppException(ErrorCode.UNAUTHENTICATED);
 
-        var token = generateToken(user);
+        var accessToken = generateAccessToken(user);
+        var refreshToken = generateRefreshToken(user);
+
         Date expiry = new Date(java.time.Instant.now()
                 .plus(VALID_DURATION, java.time.temporal.ChronoUnit.SECONDS)
                 .toEpochMilli());
-        return AuthenticationResponse.builder().token(token).expiryTime(expiry).build();
+        return AuthenticationResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .expiryTime(expiry)
+                .build();
     }
 
     public void logout(LogoutRequest request) throws ParseException, JOSEException {
+        // thu hồi accessToken
         try {
-            var signToken = verifyToken(request.getToken(), true);
+            var signToken = verifyToken(request.getAccessToken());
             String jit = signToken.getJWTClaimsSet().getJWTID();
             Date expiryTime = signToken.getJWTClaimsSet().getExpirationTime();
 
@@ -113,13 +140,38 @@ public class AuthenticationService {
 
             invalidatedRepository.save(invalidatedToken);
         } catch (AppException e) {
-            log.info("Token already expired");
+            log.info("Access Token already expired or invalid");
+        }
+
+        // thu hồi refreshToken
+        try {
+            if (request.getRefreshToken() != null && !request.getRefreshToken().isEmpty()) {
+                var signRefreshToken = verifyToken(request.getRefreshToken());
+                String refreshJit = signRefreshToken.getJWTClaimsSet().getJWTID();
+                Date refreshExpiryTime = signRefreshToken.getJWTClaimsSet().getExpirationTime();
+
+                InvalidatedToken invalidatedRefreshToken = InvalidatedToken.builder()
+                        .id(refreshJit)
+                        .expiryTime(refreshExpiryTime)
+                        .build();
+
+                invalidatedRepository.save(invalidatedRefreshToken);
+            }
+        } catch (AppException e) {
+            log.info("Refresh Token already expired or invalid");
         }
     }
 
     public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
-        var signJWT = verifyToken(request.getToken(), true);
+        var signJWT = verifyToken(request.getRefreshToken());
 
+        // check type xem có thực sự là refresh token hay không
+        String type = signJWT.getJWTClaimsSet().getStringClaim("type");
+        if (!"REFRESH".equals(type)) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        // Invalidate (Thu hồi) Refresh Token cũ để chống xài lại
         var jit = signJWT.getJWTClaimsSet().getJWTID();
         var expiryTime = signJWT.getJWTClaimsSet().getExpirationTime();
 
@@ -128,6 +180,7 @@ public class AuthenticationService {
 
         invalidatedRepository.save(invalidatedToken);
 
+        // tìm user
         var username = signJWT.getJWTClaimsSet().getSubject();
 
         var user =
@@ -137,31 +190,30 @@ public class AuthenticationService {
             throw new AppException(ErrorCode.USER_NOT_VERIFIED);
         }
 
-        var token = generateToken(user);
+        // cấp lại token mới
+        var accessToken = generateAccessToken(user);
+        var refreshToken = generateRefreshToken(user);
         Date expiry = new Date(java.time.Instant.now()
                 .plus(VALID_DURATION, java.time.temporal.ChronoUnit.SECONDS)
                 .toEpochMilli());
-        return AuthenticationResponse.builder().token(token).expiryTime(expiry).build();
+        return AuthenticationResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .expiryTime(expiry)
+                .build();
     }
 
-    private SignedJWT verifyToken(String token, boolean isRefresh) throws JOSEException, ParseException {
+    private SignedJWT verifyToken(String token) throws JOSEException, ParseException {
 
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
 
         SignedJWT signedJWT = SignedJWT.parse(token);
 
-        Date expityTime = (isRefresh)
-                ? new Date(signedJWT
-                        .getJWTClaimsSet()
-                        .getIssueTime()
-                        .toInstant()
-                        .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
-                        .toEpochMilli())
-                : signedJWT.getJWTClaimsSet().getExpirationTime();
+        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
         var verified = signedJWT.verify(verifier);
 
-        if (!(verified && expityTime.after(new Date()))) {
+        if (!(verified && expiryTime.after(new Date()))) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
@@ -175,19 +227,18 @@ public class AuthenticationService {
 
         if (user.getPasswordChangeAt() != null) {
             Date issueTime = signedJWT.getJWTClaimsSet().getIssueTime();
-            LocalDateTime issueDateTime  = issueTime.toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
+            LocalDateTime issueDateTime =
+                    issueTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
-            if (issueDateTime.isBefore(user.getPasswordChangeAt())){
-                throw  new AppException(ErrorCode.UNAUTHENTICATED);
+            if (issueDateTime.isBefore(user.getPasswordChangeAt())) {
+                throw new AppException(ErrorCode.UNAUTHENTICATED);
             }
         }
 
         return signedJWT;
     }
 
-    private String generateToken(User user) {
+    private String generateAccessToken(User user) {
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
@@ -209,6 +260,34 @@ public class AuthenticationService {
             return jwsObject.serialize();
         } catch (JOSEException e) {
             log.error("Cannot create token", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String generateRefreshToken(User user) {
+        JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);
+
+        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+                .subject(user.getId())
+                .issuer("dl1803.com")
+                .issueTime(new Date())
+                .expirationTime(new Date(Instant.now()
+                        .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
+                        .toEpochMilli()))
+                .jwtID(UUID.randomUUID().toString())
+                // Phân biệt Token này chuyên dùng để Refresh
+                .claim("type", "REFRESH")
+                // KHÔNG GỌI hàm buildScope(user)
+                .build();
+
+        Payload payload = new Payload(jwtClaimsSet.toJSONObject());
+        JWSObject jwsObject = new JWSObject(jwsHeader, payload);
+
+        try {
+            jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
+            return jwsObject.serialize();
+        } catch (JOSEException e) {
+            log.error("Cannot create refresh token", e);
             throw new RuntimeException(e);
         }
     }
@@ -317,8 +396,11 @@ public class AuthenticationService {
         kafkaTemplate.send("notification-delivery", event);
     }
 
-    @Transactional // quản lý transaction(nhóm các thao tác trên db thành 1 đơn vị thống nhất), nếu method này gọi method khác -> Spring quản lý transaction, nếu method khác có @Transactional -> join vào transaction của method này
-    // yêu cầu chạy method trong 1 transaction với Spring quản lý, khi hết method -> Spring auto commit -> unlock @Clock()(nếu có lỗi -> rollback)
+    @Transactional // quản lý transaction(nhóm các thao tác trên db thành 1 đơn vị thống nhất), nếu method này gọi
+    // method khác -> Spring quản lý transaction, nếu method khác có @Transactional -> join vào
+    // transaction của method này
+    // yêu cầu chạy method trong 1 transaction với Spring quản lý, khi hết method -> Spring auto commit -> unlock
+    // @Clock()(nếu có lỗi -> rollback)
     public void resetPassword(ResetPasswordRequest request) {
         User user = userRepository.findAndLockByEmail(request.getEmail()).orElseThrow(() -> {
             throw new AppException(ErrorCode.USER_NOT_EXISTED);
@@ -363,16 +445,114 @@ public class AuthenticationService {
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
 
         user.setPasswordChangeAt(LocalDateTime.now());
-        Date expiry = new Date(Instant.now()
-                .plus(VALID_DURATION, ChronoUnit.SECONDS)
-                .toEpochMilli());
+        Date expiry =
+                new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli());
 
         userRepository.save(user);
 
-        var token = generateToken(user);
+        var token = generateAccessToken(user);
         return AuthenticationResponse.builder()
-                .token(token)
+                .accessToken(token)
                 .expiryTime(expiry)
                 .build();
+    }
+
+    public AuthenticationResponse authenticateWithGoogle(GoogleLoginRequest request) {
+        // Verify token with GG
+        GoogleIdToken idToken = verifyGoogleToken(request.getIdToken());
+
+        // lấy claims bên trong gg id token đã xác thực ( chứa sub, email, name , email_verfied, exp, ...)
+        GoogleIdToken.Payload payload = idToken.getPayload();
+
+        // Get info from payload
+        String googleId = payload.getSubject();
+        String email = payload.getEmail();
+        String name = (String) payload.get("name");
+
+        // Find user by Google ID -> if not -> find by email
+        User user = userRepository
+                .findByGoogleId(googleId)
+                .orElseGet(
+                        () -> // nếu tìm bằng ggid -> k thấy -> trả Optional.empty(), thấy -> User
+                        userRepository.findByEmail(email).orElse(null));
+
+        // Link acc if user registered by Local (but not linked to GG)
+        if (user != null) {
+            if (user.getGoogleId() == null) {
+                user.setGoogleId(googleId);
+                userRepository.save(user);
+            }
+        } else {
+            // If user not ex -> new register
+
+            HashSet<Role> roles = new HashSet<>();
+            roleRepository.findById(com.dl1803.identity.enums.Role.USER.name()).ifPresent(roles::add);
+
+            user = User.builder()
+                    .email(email)
+                    .username(email)
+                    .googleId(googleId)
+                    .emailVerified(payload.getEmailVerified())
+                    .authProvider(AuthProvider.GOOGLE)
+                    .password(passwordEncoder.encode(UUID.randomUUID().toString())) // login GG -> set passw ngẫy nhiên
+                    .roles(roles)
+                    .build();
+
+            user = userRepository.save(user);
+
+            // Create Profile bên ProfileService
+            ProfileCreationRequest profileRequest = ProfileCreationRequest.builder()
+                    .userId(user.getId())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .firstName(name) // Tạm gán full name vào firstName
+                    .build();
+            try {
+                profileClient.createProfile(profileRequest);
+            } catch (Exception e) {
+                log.error("Failed to create profile for user {}", user.getId(), e);
+                // Bạn có thể quyết định ném lỗi hay bỏ qua
+            }
+        }
+
+        // Generate token hệ thống
+        var accessToken = generateAccessToken(user);
+        var refreshToken = generateRefreshToken(user);
+        Date expiry = new Date(java.time.Instant.now()
+                .plus(VALID_DURATION, java.time.temporal.ChronoUnit.SECONDS)
+                .toEpochMilli());
+
+        return AuthenticationResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .expiryTime(expiry)
+                .build();
+    }
+
+    // nhận idtoken từ FE gửi lên -> xác thực tính hợp lệ từ google
+    private GoogleIdToken verifyGoogleToken(String idTokenString) {
+        try {
+            GoogleIdTokenVerifier googleIdTokenVerifier = new GoogleIdTokenVerifier.Builder( // obj kiểm tra token.
+                            new NetHttpTransport(), // obj cung cấp http transport layer -> auto fetch public key trên
+                            // internet
+                            GsonFactory.getDefaultInstance() // trình giải mã json -> lấy payload token
+                            )
+                    .setAudience(Collections.singletonList(
+                            googleClientId)) // kiểm tra token có đúng do GG cấp cho ứng dụng hện tại kh
+                    .build();
+
+            // GoogleIdToken : gg id token sau khi đã xác thực
+            // verify() thực hiện kiểm tra signature, expiration time, audience, issuer, ...
+            // -> trả về GoogleIdToken nếu hợp lệ, null nếu không hợp lệ
+            GoogleIdToken idToken = googleIdTokenVerifier.verify(idTokenString);
+
+            if (idToken == null) {
+                throw new AppException(ErrorCode.INVALID_GOOGLE_TOKEN);
+            }
+            return idToken;
+        } catch (IOException | GeneralSecurityException e) {
+            log.error("Google verify error: ", e);
+            throw new AppException(ErrorCode.GOOGLE_AUTH_FAILED);
+        }
     }
 }

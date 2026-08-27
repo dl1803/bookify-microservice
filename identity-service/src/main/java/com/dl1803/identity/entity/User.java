@@ -5,6 +5,8 @@ import java.util.Set;
 
 import jakarta.persistence.*;
 
+import com.dl1803.identity.enums.AuthProvider;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -44,6 +46,17 @@ public class User {
 
     @Column(name = "password_change_at")
     LocalDateTime passwordChangeAt;
+
+    @Column(name = "google_id", unique = true)
+    String googleId;
+
+    @Enumerated(EnumType.STRING) // yêu cầu DE lưu chữ "LOCAL" hoặc "GOOGLE" thay vì số 0,1 (vì dùng enum)
+    @Column(name = "auth_provider", nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'LOCAL'")
+    // columnDefinition báo cho MYSQL gán default value ở múc DB : khi ins vào DB mà k truyền field này -> tự điền LOCAL
+    // Khi thêm column mới vào bảng đang có dữ liệu cũ, DEFAULT 'LOCAL' có thể giúp DB điền giá trị mặc định cho các row
+    // cũ (muục đích chính)
+
+    AuthProvider authProvider = AuthProvider.LOCAL; // chỉ ở mức Java , Nó không sửa database cũ
 
     @ManyToMany
     Set<Role> roles;

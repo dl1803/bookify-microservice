@@ -97,4 +97,14 @@ public class AuthenticationController {
                 .result(result)
                 .build();
     }
+
+    @PostMapping("/google")
+    public ApiResponse<AuthenticationResponse> authenticateWithGoogle(@RequestBody @Valid GoogleLoginRequest request) {
+        var result = authenticationService.authenticateWithGoogle(request);
+        return ApiResponse.<AuthenticationResponse>builder()
+                .code(1000)
+                .message("Google login successful")
+                .result(result)
+                .build();
+    }
 }
