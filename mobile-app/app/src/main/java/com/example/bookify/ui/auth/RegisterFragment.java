@@ -93,19 +93,42 @@ public class RegisterFragment extends Fragment {
             binding.btnRegister.setText(isLoading? "Đang đăng ký..." : "Đăng ký");
         });
 
-        // Error
         authViewModel.getErrorMessage().observe(getViewLifecycleOwner(), errorMessage -> {
             if (errorMessage != null && !errorMessage.isEmpty()) {
                 Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                binding.tilUsername.setError(errorMessage);
+            } else {
+                clearAllErrors();
             }
         });
 
         authViewModel.getRegisterSuccess().observe(getViewLifecycleOwner(), isSucess -> {
             if (isSucess){
-                Toast.makeText(requireContext(), "Đăng ký thành công! Vui lòng xác thực Email.", Toast.LENGTH_SHORT).show();
+                authViewModel.resetRegisterState();
+                clearAllErrors();
+                Toast.makeText(requireContext(), "Registration successful! Please verify your email.", Toast.LENGTH_SHORT).show();
                 Navigation.findNavController(requireView()).navigate(R.id.action_registerFragment_to_otpVerifyFragment);
             }
         });
+
+        android.text.TextWatcher clearWatcher = new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { clearAllErrors(); }
+            @Override public void afterTextChanged(android.text.Editable s) {}
+        };
+        binding.etUsername.addTextChangedListener(clearWatcher);
+        binding.etEmail.addTextChangedListener(clearWatcher);
+        binding.etPassword.addTextChangedListener(clearWatcher);
+        binding.etConfirmPassword.addTextChangedListener(clearWatcher);
+    }
+
+    private void clearAllErrors() {
+        binding.tilUsername.setError(null);
+        binding.tilFirstName.setError(null);
+        binding.tilLastName.setError(null);
+        binding.tilEmail.setError(null);
+        binding.tilPassword.setError(null);
+        binding.tilConfirmPassword.setError(null);
     }
 
     @Override

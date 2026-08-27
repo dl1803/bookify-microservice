@@ -58,19 +58,35 @@ public class CreatePasswordFragment extends Fragment {
         authViewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
                 Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+                binding.tilConfirmPassword.setError(error);
+                binding.tilNewPassword.setError(" ");
+            } else {
+                binding.tilNewPassword.setError(null);
+                binding.tilConfirmPassword.setError(null);
             }
         });
 
         authViewModel.getResetPasswordSuccess().observe(getViewLifecycleOwner(), isSuccess -> {
             if (isSuccess) {
-                // Reset cờ tránh lỗi
                 authViewModel.resetResetPasswordState();
-                Toast.makeText(requireContext(), "Mật khẩu đã được đổi thành công!", Toast.LENGTH_SHORT).show();
+                binding.tilNewPassword.setError(null);
+                binding.tilConfirmPassword.setError(null);
+                Toast.makeText(requireContext(), "Password changed successfully! Please login.", Toast.LENGTH_SHORT).show();
 
-                // Trở về trang Đăng nhập
                 Navigation.findNavController(requireView()).navigate(R.id.action_createPasswordFragment_to_loginFragment);
             }
         });
+
+        android.text.TextWatcher clearErrors = new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                binding.tilNewPassword.setError(null);
+                binding.tilConfirmPassword.setError(null);
+            }
+            @Override public void afterTextChanged(android.text.Editable s) {}
+        };
+        binding.etNewPassword.addTextChangedListener(clearErrors);
+        binding.etConfirmPassword.addTextChangedListener(clearErrors);
     }
 
     @Override

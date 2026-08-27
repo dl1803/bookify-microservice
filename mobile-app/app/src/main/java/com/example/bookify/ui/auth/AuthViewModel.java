@@ -5,10 +5,8 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.bookify.data.model.UserModel;
-import com.example.bookify.data.remote.dto.ApiResponse;
 import com.example.bookify.data.remote.dto.UserCreationRequest;
 import com.example.bookify.data.repository.AuthRepository;
-import com.google.gson.Gson;
 
 import java.util.Calendar;
 
@@ -18,7 +16,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import retrofit2.HttpException;
 
 @HiltViewModel
 public class AuthViewModel extends ViewModel {
@@ -85,6 +82,14 @@ public class AuthViewModel extends ViewModel {
         forgotpPasswordSuccess.setValue(false);
     }
 
+    public void resetRegisterState() {
+        registerSuccess.setValue(false);
+    }
+
+    public void resetVerifyState() {
+        verifySuccess.setValue(false);
+    }
+
     public LiveData<Boolean> getResetPasswordSuccess() {
         return resetPasswordSuccess;
     }
@@ -96,6 +101,19 @@ public class AuthViewModel extends ViewModel {
     public void resetResetPasswordState() {
         resetPasswordSuccess.setValue(false);
     }
+
+    public void updateLoadingState(boolean loading) {
+        isLoading.setValue(loading);
+    }
+
+
+
+    // compositeDisposable : obj quản lý nhiều Disposable -> quản lý/hủy nhiều luồng ngầm cùng lúc -> giúp tránh memory leak
+    // Khi gọi .subcribe() -> Rxjava trả về 1 Disposable(việc đăng ký đang đc thực hiện , cho phép hủy)
+    // subscribeOn(Schedulers.io()) : Khi subscription bắt đầu, công việc sẽ thực hiện trên IO thread(ngầm)
+    // observeOn(AndroidSchedulers.mainThread()): xử lý kết quả trả về trên Main thread
+    // subscribe() : trả về 1 Disposable -> add vào compositeDisposable -> chạy async:  đăng kí subscription nhận kq từ Single, thực thi Rx chain, chờ kết quả
+
 
     public void login(String username, String password) {
         if (username == null || username.trim().isEmpty()) {
@@ -129,17 +147,7 @@ public class AuthViewModel extends ViewModel {
                                 },
                                 throwable -> {
                                     isLoading.setValue(false);
-                                    if (throwable instanceof HttpException) {
-                                        try {
-                                            String errorBody = ((HttpException) throwable).response().errorBody().string();
-                                            ApiResponse<?> apiResponse = new Gson().fromJson(errorBody, ApiResponse.class);
-                                            errorMessage.setValue(apiResponse.getMessage() != null ? apiResponse.getMessage() : "Login failed");
-                                        } catch (Exception e) {
-                                            errorMessage.setValue("Login failed: " + throwable.getMessage());
-                                        }
-                                    } else {
-                                        errorMessage.setValue(throwable.getMessage() != null ? throwable.getMessage() : "An error occurred");
-                                    }
+                                    errorMessage.setValue(throwable.getMessage() != null ? throwable.getMessage() : "An error occurred");
                                 }
                         )
         );
@@ -218,11 +226,7 @@ public class AuthViewModel extends ViewModel {
                         .subscribe(
                                 response -> {
                                     isLoading.setValue(false);
-                                    if (response.getCode() == 1000) {
-                                        registerSuccess.setValue(true);
-                                    } else {
-                                        errorMessage.setValue(response.getMessage());
-                                    }
+                                    registerSuccess.setValue(true);
                                 },
                                 throwable -> {
                                     isLoading.setValue(false);
@@ -279,13 +283,9 @@ public class AuthViewModel extends ViewModel {
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                response -> {
+                                isSuccess -> {
                                     isLoading.setValue(false);
-                                    if (response.getCode() == 1000) {
-                                        verifySuccess.setValue(true);
-                                    } else {
-                                        errorMessage.setValue(response.getMessage());
-                                    }
+                                    verifySuccess.setValue(true);
                                 },
                                 throwable -> {
                                     isLoading.setValue(false);
@@ -302,11 +302,8 @@ public class AuthViewModel extends ViewModel {
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                response -> {
+                                isSuccess -> {
                                     isLoading.setValue(false);
-                                    if (response.getCode() != 1000) {
-                                        errorMessage.setValue(response.getMessage());
-                                    }
                                 },
                                 throwable -> {
                                     isLoading.setValue(false);
@@ -331,13 +328,9 @@ public class AuthViewModel extends ViewModel {
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                response -> {
+                                isSuccess -> {
                                     isLoading.setValue(false);
-                                    if (response.getCode() == 1000){
-                                        forgotpPasswordSuccess.setValue(true);
-                                    } else {
-                                        errorMessage.setValue(response.getMessage());
-                                    }
+                                    forgotpPasswordSuccess.setValue(true);
                                 },
                                 throwable -> {
                                     isLoading.setValue(false);
@@ -369,18 +362,36 @@ public class AuthViewModel extends ViewModel {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        response -> {
+                        isSuccess -> {
                             isLoading.setValue(false);
-                            if (response.getCode() == 1000) {
-                                resetPasswordSuccess.setValue(true);
-                            } else {
-                                errorMessage.setValue(response.getMessage());
-                            }
-                            },
+                            resetPasswordSuccess.setValue(true);
+                        },
                         throwable -> {
                             isLoading.setValue(false);
                             errorMessage.setValue(throwable.getMessage());
                         })
+        );
+
+    }
+
+    public void loginWithGoogle(String idToken){
+        isLoading.setValue(true);
+        errorMessage.setValue(null);
+
+        compositeDisposable.add(
+                authRepository.loginWithGoogle(idToken)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                user -> {
+                                    isLoading.setValue(false);
+                                    authSuccessUser.setValue(user);
+                                },
+                                throwable -> {
+                                    isLoading.setValue(false);
+                                    errorMessage.setValue(throwable.getMessage());
+                                }
+                        )
         );
 
     }

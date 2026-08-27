@@ -4,6 +4,9 @@ import com.example.bookify.data.remote.dto.ApiResponse;
 import com.example.bookify.data.remote.dto.AuthenticationRequest;
 import com.example.bookify.data.remote.dto.AuthenticationResponse;
 import com.example.bookify.data.remote.dto.ForgotPasswordRequest;
+import com.example.bookify.data.remote.dto.GoogleLoginRequest;
+import com.example.bookify.data.remote.dto.LogoutRequest;
+import com.example.bookify.data.remote.dto.RefreshRequest;
 import com.example.bookify.data.remote.dto.ResendVerificationRequest;
 import com.example.bookify.data.remote.dto.ResetPasswordRequest;
 import com.example.bookify.data.remote.dto.UserCreationRequest;
@@ -32,4 +35,10 @@ public interface IdentityApiService {
 
     @POST("/api/v1/identity/auth/reset-password")
     Single<ApiResponse<Void>> resetPassword(@Body ResetPasswordRequest request);
+
+    @POST("/api/v1/identity/auth/google")
+    Single<ApiResponse<AuthenticationResponse>> loginWithGoogle(@Body GoogleLoginRequest request);
+
+    @POST("/api/v1/identity/auth/logout")
+    Single<ApiResponse<Void>> logout(@Body LogoutRequest request);
 }

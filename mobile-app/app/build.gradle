@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.hilt.android)
+    alias(libs.plugins.secrets)
 }
 
 android {
@@ -30,6 +31,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 }
 
@@ -69,4 +71,9 @@ dependencies {
 
     // Shimmer
     implementation libs.shimmer
+
+    // Google Sign-In (Credential Manager)
+    implementation libs.credentials
+    implementation libs.credentials.play.services.auth
+    implementation libs.googleid
 }

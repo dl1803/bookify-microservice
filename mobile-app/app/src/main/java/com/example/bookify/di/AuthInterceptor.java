@@ -21,17 +21,19 @@ public class AuthInterceptor implements Interceptor {
         this.tokenManager = tokenManager;
     }
 
+    // sẽ được gọi mỗi khi có request đi qua interceptor
     @NonNull
     @Override
     public Response intercept(@NonNull Chain chain) throws IOException {
-        Request original = chain.request();
-        Request.Builder builder = original.newBuilder();
+        Request original = chain.request(); // lấy request hện tại
+        Request.Builder builder = original.newBuilder(); // tạo builder để tạo request mới dựa trên rq cũ
 
         String token = tokenManager.getToken();
         if (token != null && !token.isEmpty()) {
-            builder.header("Authorization", "Bearer " + token);
+            builder.header("Authorization", "Bearer " + token); // thêm header vào rq mới
         }
 
-        return chain.proceed(builder.build());
+        return chain.proceed(builder.build()); // build rq và đưa tiếp tục đi qua chain để gửi rq tới server
+        // và nhận kết quả trả về Response để đưa repo xử lí
     }
 }

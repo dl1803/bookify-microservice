@@ -23,7 +23,13 @@ public enum ErrorCode {
     USER_NOT_VERIFIED(1035, "Email is not verified", HttpStatus.FORBIDDEN),
     USER_ALREADY_VERIFIED(1036, "Email is already verified", HttpStatus.BAD_REQUEST),
     OTP_SEND_COOLDOWN(1037, "Please wait before requesting a new OTP", HttpStatus.TOO_MANY_REQUESTS),
-    TOO_MANY_OTP_ATTEMPTS(1038, "Too many failed attempts. Please request a new OTP", HttpStatus.BAD_REQUEST);
+    TOO_MANY_OTP_ATTEMPTS(1038, "Too many failed attempts. Please request a new OTP", HttpStatus.BAD_REQUEST),
+    INVALID_GOOGLE_TOKEN(1039, "Invalid Google token", HttpStatus.BAD_REQUEST),
+    GOOGLE_AUTH_FAILED(1040, "Google authentication failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    ACCOUNT_LINKED_TO_DIFFERENT_PROVIDER(
+            1041,
+            "This email is already registered with a different login method",
+            HttpStatus.CONFLICT); // login local khi đã login GG
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

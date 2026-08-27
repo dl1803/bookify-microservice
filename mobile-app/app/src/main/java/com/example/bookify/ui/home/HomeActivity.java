@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.bookify.R;
 import com.example.bookify.data.model.PostModel;
 import com.example.bookify.ui.alerts.NotificationsActivity;
+import com.example.bookify.ui.auth.AuthActivity;
 import com.example.bookify.ui.home.adapter.PostAdapter;
 import com.example.bookify.ui.profile.ProfileActivity;
 import com.example.bookify.utils.BookifyDialogHelper;
@@ -32,15 +33,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class HomeActivity extends AppCompatActivity {
-
-    @Inject
-    com.example.bookify.data.repository.AuthRepository authRepository;
 
     private HomeViewModel viewModel;
     private PostAdapter adapter;
@@ -106,15 +102,6 @@ public class HomeActivity extends AppCompatActivity {
                         .show(getSupportFragmentManager(), "GlobalMenu");
             });
         }
-    }
-
-    private void performLogout() {
-        authRepository.logout();
-        Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(HomeActivity.this, com.example.bookify.ui.auth.AuthViewModel.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
     }
 
     private void setupCreatePostSection() {
@@ -229,6 +216,17 @@ public class HomeActivity extends AppCompatActivity {
         viewModel.getPosts().observe(this, posts -> {
             if (adapter != null && posts != null) {
                 adapter.updatePosts(posts);
+            }
+        });
+
+        // Observe session expired — ViewModel xử lý logic, Activity chỉ phản ứng UI
+        viewModel.getSessionExpired().observe(this, expired -> {
+            if (expired != null && expired) {
+                Toast.makeText(this, "Session expired, please login again.", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(this, AuthActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
             }
         });
     }
