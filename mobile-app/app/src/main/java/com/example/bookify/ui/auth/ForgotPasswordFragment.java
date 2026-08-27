@@ -45,20 +45,29 @@ public class ForgotPasswordFragment extends Fragment {
             binding.btnSubmit.setEnabled(!isLoading);
             binding.btnSubmit.setText(isLoading ? "Sending..." : "Send Reset OTP");
         });
-        // Báo lỗi
         authViewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
                 Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+                binding.tilEmail.setError(error);
+            } else {
+                binding.tilEmail.setError(null);
             }
         });
         authViewModel.getForgotPasswordSuccess().observe(getViewLifecycleOwner(), isSuccess -> {
             if (isSuccess) {
                 authViewModel.resetForgotPasswordState();
-
+                binding.tilEmail.setError(null);
                 Toast.makeText(requireContext(), "Reset OTP sent successfully!", Toast.LENGTH_SHORT).show();
-
                 Navigation.findNavController(requireView()).navigate(R.id.action_forgotPasswordFragment_to_verifyResetPasswordFragment);
             }
+        });
+
+        binding.etEmail.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                binding.tilEmail.setError(null);
+            }
+            @Override public void afterTextChanged(android.text.Editable s) {}
         });
     }
 

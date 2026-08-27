@@ -4,14 +4,21 @@ import com.google.gson.annotations.SerializedName;
 import java.util.Date;
 
 public class AuthenticationResponse {
-    @SerializedName("token")
-    private String token;
+    @SerializedName("accessToken")
+    private String accessToken;
+
+    @SerializedName("refreshToken")
+    private String refreshToken;
 
     @SerializedName("expiryTime")
     private Date expiryTime;
 
-    public String getToken() {
-        return token;
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
     }
 
     public Date getExpiryTime() {
