@@ -86,24 +86,33 @@ public class RegisterFragment extends Fragment {
         datePicker.show(getParentFragmentManager(), "DATE_PICKER");
     }
 
-    private void observeViewModel(){
-        // Loading
+    private void observeViewModel() {
+        //  Loading
         authViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
             binding.btnRegister.setEnabled(!isLoading);
-            binding.btnRegister.setText(isLoading? "Đang đăng ký..." : "Đăng ký");
+            binding.btnRegister.setText(isLoading ? "Registering..." : "Register");
         });
 
-        authViewModel.getErrorMessage().observe(getViewLifecycleOwner(), errorMessage -> {
-            if (errorMessage != null && !errorMessage.isEmpty()) {
-                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show();
-                binding.tilUsername.setError(errorMessage);
-            } else {
-                clearAllErrors();
+        //  Field Errors
+        authViewModel.getRegUsernameError().observe(getViewLifecycleOwner(), error -> binding.tilUsername.setError(error));
+        authViewModel.getRegEmailError().observe(getViewLifecycleOwner(), error -> binding.tilEmail.setError(error));
+        authViewModel.getRegFirstNameError().observe(getViewLifecycleOwner(), error -> binding.tilFirstName.setError(error));
+        authViewModel.getRegLastNameError().observe(getViewLifecycleOwner(), error -> binding.tilLastName.setError(error));
+        authViewModel.getRegDobError().observe(getViewLifecycleOwner(), error -> binding.tilDob.setError(error));
+        authViewModel.getRegCityError().observe(getViewLifecycleOwner(), error -> binding.tilCity.setError(error));
+        authViewModel.getRegPasswordError().observe(getViewLifecycleOwner(), error -> binding.tilPassword.setError(error));
+        authViewModel.getRegConfirmPasswordError().observe(getViewLifecycleOwner(), error -> binding.tilConfirmPassword.setError(error));
+
+        //  API Error (Toast thông báo hệ thống / kết nối)
+        authViewModel.getApiError().observe(getViewLifecycleOwner(), error -> {
+            if (error != null && !error.isEmpty()) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
             }
         });
 
-        authViewModel.getRegisterSuccess().observe(getViewLifecycleOwner(), isSucess -> {
-            if (isSucess){
+        //  Success State
+        authViewModel.getRegisterSuccess().observe(getViewLifecycleOwner(), isSuccess -> {
+            if (isSuccess) {
                 authViewModel.resetRegisterState();
                 clearAllErrors();
                 Toast.makeText(requireContext(), "Registration successful! Please verify your email.", Toast.LENGTH_SHORT).show();
@@ -111,15 +120,15 @@ public class RegisterFragment extends Fragment {
             }
         });
 
-        android.text.TextWatcher clearWatcher = new android.text.TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { clearAllErrors(); }
-            @Override public void afterTextChanged(android.text.Editable s) {}
-        };
-        binding.etUsername.addTextChangedListener(clearWatcher);
-        binding.etEmail.addTextChangedListener(clearWatcher);
-        binding.etPassword.addTextChangedListener(clearWatcher);
-        binding.etConfirmPassword.addTextChangedListener(clearWatcher);
+        //  TextWatchers xóa lỗi từng ô khi người dùng gõ
+        binding.etUsername.addTextChangedListener(new SimpleTextWatcher(() -> binding.tilUsername.setError(null)));
+        binding.etEmail.addTextChangedListener(new SimpleTextWatcher(() -> binding.tilEmail.setError(null)));
+        binding.etFirstName.addTextChangedListener(new SimpleTextWatcher(() -> binding.tilFirstName.setError(null)));
+        binding.etLastName.addTextChangedListener(new SimpleTextWatcher(() -> binding.tilLastName.setError(null)));
+        binding.etDob.addTextChangedListener(new SimpleTextWatcher(() -> binding.tilDob.setError(null)));
+        binding.etCity.addTextChangedListener(new SimpleTextWatcher(() -> binding.tilCity.setError(null)));
+        binding.etPassword.addTextChangedListener(new SimpleTextWatcher(() -> binding.tilPassword.setError(null)));
+        binding.etConfirmPassword.addTextChangedListener(new SimpleTextWatcher(() -> binding.tilConfirmPassword.setError(null)));
     }
 
     private void clearAllErrors() {
@@ -127,8 +136,20 @@ public class RegisterFragment extends Fragment {
         binding.tilFirstName.setError(null);
         binding.tilLastName.setError(null);
         binding.tilEmail.setError(null);
+        binding.tilDob.setError(null);
+        binding.tilCity.setError(null);
         binding.tilPassword.setError(null);
         binding.tilConfirmPassword.setError(null);
+    }
+
+    private static class SimpleTextWatcher implements android.text.TextWatcher {
+        private final Runnable onTextChangedRunnable;
+        public SimpleTextWatcher(Runnable runnable) { this.onTextChangedRunnable = runnable; }
+        @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+            if (onTextChangedRunnable != null) onTextChangedRunnable.run();
+        }
+        @Override public void afterTextChanged(android.text.Editable s) {}
     }
 
     @Override

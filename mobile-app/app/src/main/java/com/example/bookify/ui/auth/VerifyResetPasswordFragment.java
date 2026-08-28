@@ -38,6 +38,18 @@ public class VerifyResetPasswordFragment extends Fragment {
         authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
         binding.tvSubtitle.setText("We sent a 4-digit verification code to " + authViewModel.getRegisterEmail() + " to authorize your password change. Please enter it below.");
         setupClickListeners();
+
+        // Tự động focus vào ô OTP và mở bàn phím
+        binding.pinViewOtp.post(() -> {
+            if (binding != null && isAdded()) {
+                binding.pinViewOtp.requestFocus();
+                android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.showSoftInput(binding.pinViewOtp, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+                }
+            }
+        });
+
         startResendTimer();
     }
     private void setupClickListeners() {
@@ -59,20 +71,25 @@ public class VerifyResetPasswordFragment extends Fragment {
         });
     }
     private void startResendTimer() {
+        if (binding == null || !isAdded()) return;
         binding.tvResend.setEnabled(false);
-        binding.tvResend.setTextColor(getResources().getColor(R.color.text_disabled, null));
+        binding.tvResend.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.text_disabled));
 
         if (countDownTimer != null) countDownTimer.cancel();
         countDownTimer = new CountDownTimer(30000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                binding.tvResend.setText(String.format("Resend in 00:%02d", millisUntilFinished / 1000));
+                if (binding != null && isAdded()) {
+                    binding.tvResend.setText(String.format("Resend in 00:%02d", millisUntilFinished / 1000));
+                }
             }
             @Override
             public void onFinish() {
-                binding.tvResend.setEnabled(true);
-                binding.tvResend.setTextColor(getResources().getColor(R.color.primary, null));
-                binding.tvResend.setText("Resend Now");
+                if (binding != null && isAdded()) {
+                    binding.tvResend.setEnabled(true);
+                    binding.tvResend.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.primary));
+                    binding.tvResend.setText("Resend Now");
+                }
             }
         }.start();
     }

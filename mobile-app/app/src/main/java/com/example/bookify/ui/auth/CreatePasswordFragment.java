@@ -50,22 +50,30 @@ public class CreatePasswordFragment extends Fragment {
     }
 
     private void observeViewModel() {
+        // Loading
         authViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
             binding.btnSubmit.setEnabled(!isLoading);
             binding.btnSubmit.setText(isLoading ? "Saving..." : "Save New Password");
         });
 
-        authViewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
+        //  Field Error: New Password
+        authViewModel.getResetNewPasswordError().observe(getViewLifecycleOwner(), error -> {
+            binding.tilNewPassword.setError(error);
+        });
+
+        //  Field Error: Confirm Password
+        authViewModel.getResetConfirmPasswordError().observe(getViewLifecycleOwner(), error -> {
+            binding.tilConfirmPassword.setError(error);
+        });
+
+        //  API Error (Toast thông báo hệ thống / kết nối)
+        authViewModel.getApiError().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
                 Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
-                binding.tilConfirmPassword.setError(error);
-                binding.tilNewPassword.setError(" ");
-            } else {
-                binding.tilNewPassword.setError(null);
-                binding.tilConfirmPassword.setError(null);
             }
         });
 
+        //  Success State
         authViewModel.getResetPasswordSuccess().observe(getViewLifecycleOwner(), isSuccess -> {
             if (isSuccess) {
                 authViewModel.resetResetPasswordState();
@@ -77,16 +85,22 @@ public class CreatePasswordFragment extends Fragment {
             }
         });
 
-        android.text.TextWatcher clearErrors = new android.text.TextWatcher() {
+        //  TextWatchers
+        binding.etNewPassword.addTextChangedListener(new android.text.TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                 binding.tilNewPassword.setError(null);
+            }
+            @Override public void afterTextChanged(android.text.Editable s) {}
+        });
+
+        binding.etConfirmPassword.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                 binding.tilConfirmPassword.setError(null);
             }
             @Override public void afterTextChanged(android.text.Editable s) {}
-        };
-        binding.etNewPassword.addTextChangedListener(clearErrors);
-        binding.etConfirmPassword.addTextChangedListener(clearErrors);
+        });
     }
 
     @Override
