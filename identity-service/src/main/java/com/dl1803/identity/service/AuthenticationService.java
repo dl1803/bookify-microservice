@@ -101,7 +101,7 @@ public class AuthenticationService {
         log.info("Signerkey: {}", SIGNER_KEY);
         var user = userRepository
                 .findByUsername(request.getUsername())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
 
         if (!user.isEmailVerified()) {
             throw new AppException(ErrorCode.USER_NOT_VERIFIED);
@@ -113,7 +113,7 @@ public class AuthenticationService {
         }
 
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
-        if (!authenticated) throw new AppException(ErrorCode.UNAUTHENTICATED);
+        if (!authenticated) throw new AppException(ErrorCode.INVALID_CREDENTIALS);
 
         var accessToken = generateAccessToken(user);
         var refreshToken = generateRefreshToken(user);
@@ -168,7 +168,7 @@ public class AuthenticationService {
         // check type xem có thực sự là refresh token hay không
         String type = signJWT.getJWTClaimsSet().getStringClaim("type");
         if (!"REFRESH".equals(type)) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+            throw new AppException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
         // Invalidate (Thu hồi) Refresh Token cũ để chống xài lại
@@ -183,8 +183,7 @@ public class AuthenticationService {
         // tìm user
         var username = signJWT.getJWTClaimsSet().getSubject();
 
-        var user =
-                userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+        var user = userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.TOKEN_EXPIRED));
 
         if (!user.isEmailVerified()) {
             throw new AppException(ErrorCode.USER_NOT_VERIFIED);
@@ -214,16 +213,16 @@ public class AuthenticationService {
         var verified = signedJWT.verify(verifier);
 
         if (!(verified && expiryTime.after(new Date()))) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+            throw new AppException(ErrorCode.TOKEN_EXPIRED);
         }
 
         if (invalidatedRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+            throw new AppException(ErrorCode.TOKEN_REVOKED);
         }
 
         // Check old token
         String userId = signedJWT.getJWTClaimsSet().getSubject();
-        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.TOKEN_EXPIRED));
 
         if (user.getPasswordChangeAt() != null) {
             Date issueTime = signedJWT.getJWTClaimsSet().getIssueTime();
@@ -231,7 +230,7 @@ public class AuthenticationService {
                     issueTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
             if (issueDateTime.isBefore(user.getPasswordChangeAt())) {
-                throw new AppException(ErrorCode.UNAUTHENTICATED);
+                throw new AppException(ErrorCode.PASSWORD_CHANGED_RELOGIN);
             }
         }
 
@@ -396,10 +395,13 @@ public class AuthenticationService {
         kafkaTemplate.send("notification-delivery", event);
     }
 
-    @Transactional // quản lý transaction(nhóm các thao tác trên db thành 1 đơn vị thống nhất), nếu method này gọi
-    // method khác -> Spring quản lý transaction, nếu method khác có @Transactional -> join vào
+    @Transactional // quản lý transaction(nhóm các thao tác trên db thành 1 đơn vị thống nhất), nếu
+    // method này gọi
+    // method khác -> Spring quản lý transaction, nếu method khác có @Transactional
+    // -> join vào
     // transaction của method này
-    // yêu cầu chạy method trong 1 transaction với Spring quản lý, khi hết method -> Spring auto commit -> unlock
+    // yêu cầu chạy method trong 1 transaction với Spring quản lý, khi hết method ->
+    // Spring auto commit -> unlock
     // @Clock()(nếu có lỗi -> rollback)
     public void resetPassword(ResetPasswordRequest request) {
         User user = userRepository.findAndLockByEmail(request.getEmail()).orElseThrow(() -> {
@@ -439,7 +441,7 @@ public class AuthenticationService {
 
         String oldPassword = request.getCurrentPassword();
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+            throw new AppException(ErrorCode.WRONG_CURRENT_PASSWORD);
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
@@ -461,7 +463,8 @@ public class AuthenticationService {
         // Verify token with GG
         GoogleIdToken idToken = verifyGoogleToken(request.getIdToken());
 
-        // lấy claims bên trong gg id token đã xác thực ( chứa sub, email, name , email_verfied, exp, ...)
+        // lấy claims bên trong gg id token đã xác thực ( chứa sub, email, name ,
+        // email_verfied, exp, ...)
         GoogleIdToken.Payload payload = idToken.getPayload();
 
         // Get info from payload

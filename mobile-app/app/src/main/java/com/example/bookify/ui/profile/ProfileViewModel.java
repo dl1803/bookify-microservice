@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel;
 import com.example.bookify.data.remote.dto.UpdateProfileRequest;
 import com.example.bookify.data.remote.dto.UserProfileResponse;
 import com.example.bookify.data.repository.ProfileRepository;
+import com.example.bookify.utils.ErrorUtils;
 
 import javax.inject.Inject;
 
@@ -120,7 +121,7 @@ public class ProfileViewModel extends ViewModel {
                                 },
                                 throwable -> {
                                     isLoading.setValue(false);
-                                    errorMessage.setValue("Error fetching profile: " + throwable.getMessage());
+                                    errorMessage.setValue(ErrorUtils.parseError(throwable, "Error fetching profile"));
                                 }
                         )
         );
@@ -144,7 +145,7 @@ public class ProfileViewModel extends ViewModel {
                                 },
                                 throwable -> {
                                     isLoading.setValue(false);
-                                    errorMessage.setValue("Error updating profile: " + throwable.getMessage());
+                                    errorMessage.setValue(ErrorUtils.parseError(throwable, "Error updating profile"));
                                 }
                         )
         );
@@ -168,7 +169,7 @@ public class ProfileViewModel extends ViewModel {
                                 },
                                 throwable -> {
                                     isLoading.setValue(false);
-                                    errorMessage.setValue("Error uploading avatar: " + throwable.getMessage());
+                                    errorMessage.setValue(ErrorUtils.parseError(throwable, "Error uploading avatar"));
                                 }
                         )
         );

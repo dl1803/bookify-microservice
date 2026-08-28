@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel;
 import com.example.bookify.data.model.UserModel;
 import com.example.bookify.data.remote.dto.UserCreationRequest;
 import com.example.bookify.data.repository.AuthRepository;
+import com.example.bookify.utils.ErrorUtils;
 
 import java.util.Calendar;
 import java.util.regex.Pattern;
@@ -207,7 +208,7 @@ public class AuthViewModel extends ViewModel {
                                 },
                                 throwable -> {
                                     isLoading.setValue(false);
-                                    String msg = throwable.getMessage() != null ? throwable.getMessage() : "Login failed";
+                                    String msg = ErrorUtils.parseError(throwable, "Login failed");
                                     errorMessage.setValue(msg);
 
                                     if (msg.toLowerCase().contains("not verified") || msg.contains("1035")) {
@@ -323,7 +324,7 @@ public class AuthViewModel extends ViewModel {
                                 },
                                 throwable -> {
                                     isLoading.setValue(false);
-                                    String msg = throwable.getMessage() != null ? throwable.getMessage() : "Registration failed";
+                                    String msg = ErrorUtils.parseError(throwable, "Registration failed");
                                     errorMessage.setValue(msg);
                                     apiError.setValue(msg);
                                     if (msg.toLowerCase().contains("user existed") || msg.contains("1002")) {
@@ -389,7 +390,7 @@ public class AuthViewModel extends ViewModel {
                                 },
                                 throwable -> {
                                     isLoading.setValue(false);
-                                    String msg = throwable.getMessage() != null ? throwable.getMessage() : "Verification failed";
+                                    String msg = ErrorUtils.parseError(throwable, "Verification failed");
                                     errorMessage.setValue(msg);
                                     apiError.setValue(msg);
                                     otpError.setValue(msg);
@@ -412,7 +413,7 @@ public class AuthViewModel extends ViewModel {
                                 },
                                 throwable -> {
                                     isLoading.setValue(false);
-                                    String msg = throwable.getMessage() != null ? throwable.getMessage() : "Failed to resend OTP";
+                                    String msg = ErrorUtils.parseError(throwable, "Failed to resend OTP");
                                     errorMessage.setValue(msg);
                                     apiError.setValue(msg);
                                 }
@@ -445,7 +446,7 @@ public class AuthViewModel extends ViewModel {
                                 },
                                 throwable -> {
                                     isLoading.setValue(false);
-                                    String msg = throwable.getMessage() != null ? throwable.getMessage() : "Failed to send reset code";
+                                    String msg = ErrorUtils.parseError(throwable, "Failed to send reset code");
                                     errorMessage.setValue(msg);
                                     apiError.setValue(msg);
                                     forgotEmailError.setValue(msg);
@@ -503,7 +504,7 @@ public class AuthViewModel extends ViewModel {
                                 },
                                 throwable -> {
                                     isLoading.setValue(false);
-                                    String msg = throwable.getMessage() != null ? throwable.getMessage() : "Failed to reset password";
+                                    String msg = ErrorUtils.parseError(throwable, "Failed to reset password");
                                     errorMessage.setValue(msg);
                                     apiError.setValue(msg);
                                 }
@@ -526,7 +527,7 @@ public class AuthViewModel extends ViewModel {
                                 },
                                 throwable -> {
                                     isLoading.setValue(false);
-                                    String msg = throwable.getMessage() != null ? throwable.getMessage() : "Google authentication failed";
+                                    String msg = ErrorUtils.parseError(throwable, "Google authentication failed");
                                     errorMessage.setValue(msg);
                                     apiError.setValue(msg);
                                 }

@@ -50,12 +50,18 @@ public class User {
     @Column(name = "google_id", unique = true)
     String googleId;
 
+    @Builder.Default
+    // Không có @Builder.Default: Khi gọi User.builder().build(), Lombok tạo đối tượng bằng constructor rỗng
+    // hoặc khởi tạo trường trực tiếp với giá trị mặc định của kiểu dữ liệu (null cho Object/Enum, 0 cho số, false cho
+    // boolean)
+    // mà bỏ qua hoàn toàn đoạn code = AuthProvider.LOCAL;.
+    // Có @Builder.Default: Lombok nhận diện giá trị khởi tạo bạn viết trong Entity (AuthProvider.LOCAL) là giá trị mặc
+    // định cho Builder.
     @Enumerated(EnumType.STRING) // yêu cầu DE lưu chữ "LOCAL" hoặc "GOOGLE" thay vì số 0,1 (vì dùng enum)
     @Column(name = "auth_provider", nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'LOCAL'")
     // columnDefinition báo cho MYSQL gán default value ở múc DB : khi ins vào DB mà k truyền field này -> tự điền LOCAL
     // Khi thêm column mới vào bảng đang có dữ liệu cũ, DEFAULT 'LOCAL' có thể giúp DB điền giá trị mặc định cho các row
     // cũ (muục đích chính)
-
     AuthProvider authProvider = AuthProvider.LOCAL; // chỉ ở mức Java , Nó không sửa database cũ
 
     @ManyToMany
