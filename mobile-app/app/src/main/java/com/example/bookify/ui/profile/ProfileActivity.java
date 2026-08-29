@@ -116,11 +116,10 @@ public class ProfileActivity extends AppCompatActivity {
 
         viewModel.getProfileData().observe(this, profile -> {
             if (profile != null) {
-                if (profile.getFirstName() != null && profile.getLastName() != null) {
-                    tvProfileName.setText(profile.getFirstName() + " " + profile.getLastName());
-                } else if (profile.getUsername() != null) {
-                    tvProfileName.setText(profile.getUsername());
-                }
+
+                String firstName = profile.getFirstName() != null ? profile.getFirstName() : "";
+                String lastName = profile.getLastName() != null ? profile.getLastName() : "";
+                tvProfileName.setText(firstName +""+ lastName);
                 
                 String locationInfo = profile.getCity() != null ? profile.getCity() : "Hanoi";
                 if (profile.getDob() != null) {

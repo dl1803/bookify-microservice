@@ -62,19 +62,34 @@ public class GlobalMenuDrawerFragment extends DialogFragment {
         viewModel.getProfileData().observe(getViewLifecycleOwner(), profile -> {
             if (profile != null) {
                 TextView txtMenuUserName = view.findViewById(R.id.txtMenuUserName);
+                TextView txtMenuEmail = view.findViewById(R.id.txtMenuEmail);
                 com.google.android.material.imageview.ShapeableImageView imgMenuAvatar = view.findViewById(R.id.imgMenuAvatar);
-                
-                String fullName = profile.getFirstName() + " " + profile.getLastName();
-                txtMenuUserName.setText(fullName.trim());
-                
+
+                // Null-safe: ghép tên tránh "null" khi lastName chưa có
+                String firstName = profile.getFirstName() != null ? profile.getFirstName().trim() : "";
+                String lastName = profile.getLastName() != null ? profile.getLastName().trim() : "";
+                String fullName = (firstName + " " + lastName).trim();
+                txtMenuUserName.setText(fullName.isEmpty() ? profile.getUsername() : fullName);
+
+                // Hiện email bên dưới tên (chủ yếu cho Google login)
+                String email = profile.getEmail();
+                if (email != null && !email.trim().isEmpty()) {
+                    txtMenuEmail.setText(email.trim());
+                    txtMenuEmail.setVisibility(android.view.View.VISIBLE);
+                } else {
+                    txtMenuEmail.setVisibility(android.view.View.GONE);
+                }
+
                 if (profile.getAvatar() != null && !profile.getAvatar().isEmpty()) {
                     com.bumptech.glide.Glide.with(this)
                             .load(com.example.bookify.utils.UrlUtils.resolveLocalUrl(profile.getAvatar()))
                             .placeholder(R.drawable.ic_menu_avatar_placeholder)
+                            .error(R.drawable.ic_menu_avatar_placeholder)
                             .into(imgMenuAvatar);
                 }
             }
         });
+
 
         viewModel.getLogoutSuccess().observe(getViewLifecycleOwner(), success -> {
             if (success != null && success) {

@@ -40,19 +40,25 @@ public class ForgotPasswordFragment extends Fragment {
         binding.btnReturnToLogin.setOnClickListener(v -> Navigation.findNavController(v).popBackStack());
     }
     private void observeViewModel() {
-        // Đang xử lý API
+        // Loading State
         authViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
             binding.btnSubmit.setEnabled(!isLoading);
             binding.btnSubmit.setText(isLoading ? "Sending..." : "Send Reset OTP");
         });
-        authViewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
+
+        // Field Error: Email
+        authViewModel.getForgotEmailError().observe(getViewLifecycleOwner(), error -> {
+            binding.tilEmail.setError(error);
+        });
+
+        // API Error (Toast thông báo hệ thống / kết nối)
+        authViewModel.getApiError().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
                 Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
-                binding.tilEmail.setError(error);
-            } else {
-                binding.tilEmail.setError(null);
             }
         });
+
+        // Success State
         authViewModel.getForgotPasswordSuccess().observe(getViewLifecycleOwner(), isSuccess -> {
             if (isSuccess) {
                 authViewModel.resetForgotPasswordState();
@@ -62,6 +68,7 @@ public class ForgotPasswordFragment extends Fragment {
             }
         });
 
+        // TextWatcher xóa lỗi khi người dùng gõ
         binding.etEmail.addTextChangedListener(new android.text.TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {

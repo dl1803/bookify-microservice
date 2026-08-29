@@ -48,10 +48,21 @@ public class OtpVerifyFragment extends Fragment {
         authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
 
         String email = authViewModel.getRegisterEmail();
-        binding.tvSubtitle.setText("We sent a 4-digit verification code to \" + email + \". Please enter it below.");
+        binding.tvSubtitle.setText("We sent a 4-digit verification code to " + email + ". Please enter it below.");
 
         setupClickListeners();
         observeViewModel();
+
+        // Tự động focus vào ô OTP và mở bàn phím
+        binding.pinViewOtp.post(() -> {
+            if (binding != null && isAdded()) {
+                binding.pinViewOtp.requestFocus();
+                android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.showSoftInput(binding.pinViewOtp, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+                }
+            }
+        });
 
         // Bắt đầu đếm ngược thời gian : 30s
         startResendTimer();
@@ -63,7 +74,7 @@ public class OtpVerifyFragment extends Fragment {
         });
 
         binding.btnVerify.setOnClickListener(v -> {
-            String otp = binding.pinViewOtp.getText().toString();
+            String otp = binding.pinViewOtp.getText() != null ? binding.pinViewOtp.getText().toString() : "";
             authViewModel.verifyEmail(otp);
         });
 
@@ -78,18 +89,25 @@ public class OtpVerifyFragment extends Fragment {
         // Loading
         authViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
             binding.btnVerify.setEnabled(!isLoading);
-            binding.btnVerify.setText(isLoading? "Verifying..." : "Verify Code");
+            binding.btnVerify.setText(isLoading ? "Verifying..." : "Verify Code");
         });
 
-        // Error
-        authViewModel.getErrorMessage().observe(getViewLifecycleOwner(), errorMessage -> {
-            if (errorMessage != null && !errorMessage.isEmpty()) {
-                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show();
+        // Error: OTP / API Error
+        authViewModel.getOtpError().observe(getViewLifecycleOwner(), error -> {
+            if (error != null && !error.isEmpty()) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
             }
         });
 
-        authViewModel.getVerifySuccess().observe(getViewLifecycleOwner(), isSucess -> {
-            if (isSucess){
+        authViewModel.getApiError().observe(getViewLifecycleOwner(), error -> {
+            if (error != null && !error.isEmpty()) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        authViewModel.getVerifySuccess().observe(getViewLifecycleOwner(), isSuccess -> {
+            if (isSuccess) {
+                authViewModel.resetVerifyState();
                 Toast.makeText(requireContext(), "Email verified! Please login.", Toast.LENGTH_SHORT).show();
                 Navigation.findNavController(requireView()).navigate(R.id.action_otpVerifyFragment_to_loginFragment);
             }
@@ -97,8 +115,9 @@ public class OtpVerifyFragment extends Fragment {
     }
 
     public void startResendTimer() {
+        if (binding == null || !isAdded()) return;
         binding.tvResend.setEnabled(false);
-        binding.tvResend.setTextColor(getResources().getColor(R.color.text_disabled, null));
+        binding.tvResend.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.text_disabled));
 
         if (countDownTimer != null) {
             countDownTimer.cancel();
@@ -109,15 +128,19 @@ public class OtpVerifyFragment extends Fragment {
             // Đếm ngược thời gian
             @Override
             public void onTick(long millisUntilFinished) {
-                binding.tvResend.setText("Resend in 00:" + (millisUntilFinished / 1000));
+                if (binding != null && isAdded()) {
+                    binding.tvResend.setText(String.format("Resend in 00:%02d", millisUntilFinished / 1000));
+                }
             }
 
             // Kết thúc đếm ngược
             @Override
             public void onFinish() {
-                binding.tvResend.setEnabled(true);
-                binding.tvResend.setTextColor(getResources().getColor(R.color.primary, null));
-                binding.tvResend.setText("Resend Now");
+                if (binding != null && isAdded()) {
+                    binding.tvResend.setEnabled(true);
+                    binding.tvResend.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.primary));
+                    binding.tvResend.setText("Resend Now");
+                }
             }
         }.start();
     }

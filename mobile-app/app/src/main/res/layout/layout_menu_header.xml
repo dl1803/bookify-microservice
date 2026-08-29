@@ -39,6 +39,19 @@
             android:textSize="22sp"
             android:textStyle="bold"
             android:textColor="@color/white"/>
+
+        <!-- Email: chỉ hiện khi đăng nhập bằng Google hoặc có email -->
+        <TextView
+            android:id="@+id/txtMenuEmail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="13sp"
+            android:textColor="#CCffffff"
+            android:visibility="gone"
+            android:ellipsize="end"
+            android:maxLines="1"/>
     </LinearLayout>
     
 </LinearLayout>
+
