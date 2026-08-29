@@ -28,7 +28,7 @@ public class AuthViewModel extends ViewModel {
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     private String registerEmail = "";
-    private String resetOtp = "";
+    private String resetToken = "";
 
     // Common / Global States
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
@@ -63,9 +63,12 @@ public class AuthViewModel extends ViewModel {
     private final MutableLiveData<String> resetConfirmPasswordError = new MutableLiveData<>(null);
     private final MutableLiveData<Boolean> resetPasswordSuccess = new MutableLiveData<>(false);
 
+    private final MutableLiveData<Boolean> verifyResetOtpSuccess = new MutableLiveData<>(false);
+
     // 5. OTP Field Errors & State
     private final MutableLiveData<String> otpError = new MutableLiveData<>(null);
     private final MutableLiveData<Boolean> verifySuccess = new MutableLiveData<>(false);
+    private final MutableLiveData<Boolean> resendOtpSuccess = new MutableLiveData<>(false);
 
     @Inject
     public AuthViewModel(AuthRepository authRepository) {
@@ -108,23 +111,27 @@ public class AuthViewModel extends ViewModel {
     public LiveData<String> getResetNewPasswordError() { return resetNewPasswordError; }
     public LiveData<String> getResetConfirmPasswordError() { return resetConfirmPasswordError; }
     public LiveData<Boolean> getResetPasswordSuccess() { return resetPasswordSuccess; }
+    public LiveData<Boolean> getVerifyResetOtpSuccess() { return verifyResetOtpSuccess; }
 
     // OTP Getters
     public LiveData<String> getOtpError() { return otpError; }
     public LiveData<Boolean> getVerifySuccess() { return verifySuccess; }
+    public LiveData<Boolean> getResendOtpSuccess() { return resendOtpSuccess; }
 
     public String getRegisterEmail() { return registerEmail; }
     public void setRegisterEmail(String email) { this.registerEmail = email; }
-    public void saveResetOtp(String otp) { this.resetOtp = otp; }
 
     // Giuúp reset trạng thái của forgot password (không bị re-trigger khi user chuyển sang verify
     // mà user bấm back nếu kh set lại false nó tự động nhảy sang verify 1l nữa)
     public void resetForgotPasswordState() { forgotpPasswordSuccess.setValue(false); }
     public void resetRegisterState() { registerSuccess.setValue(false); }
     public void resetVerifyState() { verifySuccess.setValue(false); }
+    public void resetResendOtpState() { resendOtpSuccess.setValue(false); }
     public void resetResetPasswordState() { resetPasswordSuccess.setValue(false); }
     public void resetUnverifiedEmailEvent() { unverifiedEmailEvent.setValue(null); }
     public void updateLoadingState(boolean loading) { isLoading.setValue(loading); }
+
+    public void resetVerifyResetOtpState() { verifyResetOtpSuccess.setValue(false); }
 
     public void clearLoginErrors() {
         loginUsernameError.setValue(null);
@@ -410,6 +417,7 @@ public class AuthViewModel extends ViewModel {
                         .subscribe(
                                 isSuccess -> {
                                     isLoading.setValue(false);
+                                    resendOtpSuccess.setValue(true);
                                 },
                                 throwable -> {
                                     isLoading.setValue(false);
@@ -455,12 +463,38 @@ public class AuthViewModel extends ViewModel {
         );
     }
 
+    public void verifyResetOtp(String otp) {
+        // Reset lỗi cũ
+        otpError.setValue(null);
+        apiError.setValue(null);
+
+        // Gọi repo để verifyOtp
+        isLoading.setValue(true);
+        compositeDisposable.add(
+                authRepository.verifyResetOtp(registerEmail, otp)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(token -> {
+                            isLoading.setValue(false);
+                            this.resetToken = token;
+                            verifyResetOtpSuccess.setValue(true);
+                        }, error -> {
+                            isLoading.setValue(false);
+                            String msg = ErrorUtils.parseError(error, "Failed to verify OTP");
+                            otpError.setValue(msg);
+                            apiError.setValue(msg);
+                        })
+        );
+    }
+
+
+
     public void resetPassword(String newPassword, String confirmPassword) {
         clearResetPasswordErrors();
         boolean isValid = true;
 
-        if (resetOtp == null || resetOtp.trim().isEmpty()) {
-            apiError.setValue("Invalid or missing OTP code. Please retry.");
+        if (resetToken == null || resetToken.trim().isEmpty()) {
+            apiError.setValue("Invalid or missing reset token. Please retry.");
             return;
         }
 
@@ -494,7 +528,7 @@ public class AuthViewModel extends ViewModel {
         isLoading.setValue(true);
 
         compositeDisposable.add(
-                authRepository.resetPassword(registerEmail, resetOtp, newPassword)
+                authRepository.resetPassword(resetToken, newPassword)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(

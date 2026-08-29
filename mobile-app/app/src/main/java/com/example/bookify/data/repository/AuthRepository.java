@@ -136,8 +136,19 @@ public class AuthRepository {
                 });
     }
 
-    public Single<Boolean> resetPassword(String email, String otp, String newPassword) {
-        return identityApiService.resetPassword(new ResetPasswordRequest(email, otp, newPassword))
+    public Single<String> verifyResetOtp(String email, String otp) {
+        return identityApiService.verifyResetOtp(new VerifyEmailRequest(email, otp))
+                .map(response -> {
+                    if (response.getCode() != 1000 || response.getResult() == null) {
+                        throw new Exception(
+                                response.getMessage() != null ? response.getMessage() : "OTP verification failed");
+                    }
+                    return response.getResult().getResetToken();
+                });
+    }
+
+    public Single<Boolean> resetPassword(String resetToken, String newPassword) {
+        return identityApiService.resetPassword(new ResetPasswordRequest(resetToken, newPassword))
                 .map(response -> {
                     if (response.getCode() != 1000) {
                         throw new Exception(

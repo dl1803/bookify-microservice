@@ -12,6 +12,7 @@ import com.example.bookify.data.remote.dto.ResetPasswordRequest;
 import com.example.bookify.data.remote.dto.UserCreationRequest;
 import com.example.bookify.data.remote.dto.UserResponse;
 import com.example.bookify.data.remote.dto.VerifyEmailRequest;
+import com.example.bookify.data.remote.dto.VerifyResetOtpResponse;
 
 import io.reactivex.rxjava3.core.Single;
 import retrofit2.http.Body;
@@ -35,6 +36,9 @@ public interface IdentityApiService {
 
     @POST("/api/v1/identity/auth/reset-password")
     Single<ApiResponse<Void>> resetPassword(@Body ResetPasswordRequest request);
+
+    @POST("/api/v1/identity/auth/verify-reset-otp")
+    Single<ApiResponse<VerifyResetOtpResponse>> verifyResetOtp(@Body VerifyEmailRequest request);
 
     @POST("/api/v1/identity/auth/google")
     Single<ApiResponse<AuthenticationResponse>> loginWithGoogle(@Body GoogleLoginRequest request);

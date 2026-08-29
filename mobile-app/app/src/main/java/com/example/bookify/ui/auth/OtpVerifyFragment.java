@@ -80,8 +80,6 @@ public class OtpVerifyFragment extends Fragment {
 
         binding.tvResend.setOnClickListener(v -> {
             authViewModel.resendOtp();
-            startResendTimer();
-            Toast.makeText(requireContext(), "New OTP sent!", Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -112,6 +110,14 @@ public class OtpVerifyFragment extends Fragment {
                 Navigation.findNavController(requireView()).navigate(R.id.action_otpVerifyFragment_to_loginFragment);
             }
         });
+
+        authViewModel.getResendOtpSuccess().observe(getViewLifecycleOwner(), isSuccess -> {
+            if (isSuccess) {
+                authViewModel.resetResendOtpState();
+                startResendTimer();
+                Toast.makeText(requireContext(), "New OTP sent!", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     public void startResendTimer() {
@@ -123,7 +129,7 @@ public class OtpVerifyFragment extends Fragment {
             countDownTimer.cancel();
         }
 
-        countDownTimer = new CountDownTimer(30000, 1000) {
+        countDownTimer = new CountDownTimer(60000, 1000) {
 
             // Đếm ngược thời gian
             @Override

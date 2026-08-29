@@ -23,6 +23,7 @@ import com.dl1803.event.dto.NotificationEvent;
 import com.dl1803.identity.dto.request.*;
 import com.dl1803.identity.dto.response.AuthenticationResponse;
 import com.dl1803.identity.dto.response.IntrospectResponse;
+import com.dl1803.identity.dto.response.VerifyResetOtpResponse;
 import com.dl1803.identity.entity.InvalidatedToken;
 import com.dl1803.identity.entity.Role;
 import com.dl1803.identity.entity.User;
@@ -237,6 +238,53 @@ public class AuthenticationService {
         return signedJWT;
     }
 
+    private String verifyResetToken(String token) throws JOSEException, ParseException {
+        JWSVerifier jwsVerifier = new MACVerifier(SIGNER_KEY.getBytes());
+        SignedJWT signedJWT = SignedJWT.parse(token);
+
+        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        boolean verified = signedJWT.verify(jwsVerifier);
+
+        if (!verified || !expiryTime.after(new Date())) {
+            throw new AppException(ErrorCode.INVALID_RESET_TOKEN);
+        }
+
+        String purpose = signedJWT.getJWTClaimsSet().getStringClaim("purpose");
+        if (!"RESET_PASSWORD".equals(purpose)) {
+            throw new AppException(ErrorCode.INVALID_RESET_TOKEN);
+        }
+        return signedJWT.getJWTClaimsSet().getSubject();
+    }
+
+    public VerifyResetOtpResponse verifyResetOtp(VerifyResetOtpRequest request) {
+        User user = userRepository
+                .findByEmail(request.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        if (user.getOtpAttemptCount() >= 5) {
+            throw new AppException(ErrorCode.TOO_MANY_OTP_ATTEMPTS);
+        }
+
+        if (request.getOtp() == null || !request.getOtp().equals(user.getVerificationOtp())) {
+            user.setOtpAttemptCount(user.getOtpAttemptCount() + 1);
+            userRepository.save(user);
+            throw new AppException(ErrorCode.INVALID_OTP);
+        }
+
+        if (user.getOtpExpiryTime() != null && LocalDateTime.now().isAfter(user.getOtpExpiryTime())) {
+            throw new AppException(ErrorCode.OTP_EXPIRED);
+        }
+
+        // Tiêu hủy OTP
+        user.setVerificationOtp(null);
+        user.setOtpExpiryTime(null);
+        user.setOtpAttemptCount(0);
+        userRepository.save(user);
+
+        String resetToken = generateResetToken(request.getEmail());
+        return new VerifyResetOtpResponse(resetToken);
+    }
+
     private String generateAccessToken(User user) {
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);
 
@@ -287,6 +335,30 @@ public class AuthenticationService {
             return jwsObject.serialize();
         } catch (JOSEException e) {
             log.error("Cannot create refresh token", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String generateResetToken(String email) {
+        JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);
+
+        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+                .subject(email)
+                .issuer("dl1803.com")
+                .expirationTime(
+                        new Date(Instant.now().plus(5, ChronoUnit.MINUTES).toEpochMilli()))
+                .jwtID(UUID.randomUUID().toString())
+                .claim("purpose", "RESET_PASSWORD")
+                .build();
+
+        Payload payload = new Payload(jwtClaimsSet.toJSONObject());
+        JWSObject jwsObject = new JWSObject(jwsHeader, payload);
+
+        try {
+            jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
+            return jwsObject.serialize(); // trả về chuỗi token đã được ký
+        } catch (JOSEException e) {
+            log.error("Cannot create reset token", e);
             throw new RuntimeException(e);
         }
     }
@@ -403,32 +475,18 @@ public class AuthenticationService {
     // yêu cầu chạy method trong 1 transaction với Spring quản lý, khi hết method ->
     // Spring auto commit -> unlock
     // @Clock()(nếu có lỗi -> rollback)
-    public void resetPassword(ResetPasswordRequest request) {
-        User user = userRepository.findAndLockByEmail(request.getEmail()).orElseThrow(() -> {
+    public void resetPassword(ResetPasswordRequest request) throws ParseException, JOSEException {
+
+        String email = verifyResetToken(request.getResetToken());
+
+        User user = userRepository.findAndLockByEmail(email).orElseThrow(() -> {
             throw new AppException(ErrorCode.USER_NOT_EXISTED);
         });
-
-        if (user.getOtpAttemptCount() >= 5) {
-            throw new AppException(ErrorCode.TOO_MANY_OTP_ATTEMPTS);
-        }
-
-        if (user.getVerificationOtp() == null || !user.getVerificationOtp().equals(request.getOtp())) {
-            user.setOtpAttemptCount(user.getOtpAttemptCount() + 1);
-            userRepository.save(user);
-            throw new AppException(ErrorCode.INVALID_OTP);
-        }
-
-        if (user.getOtpExpiryTime() != null && LocalDateTime.now().isAfter(user.getOtpExpiryTime())) {
-            throw new AppException(ErrorCode.OTP_EXPIRED);
-        }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
 
         user.setPasswordChangeAt(LocalDateTime.now());
 
-        user.setVerificationOtp(null);
-        user.setOtpExpiryTime(null);
-        user.setOtpAttemptCount(0);
         userRepository.save(user);
     }
 
