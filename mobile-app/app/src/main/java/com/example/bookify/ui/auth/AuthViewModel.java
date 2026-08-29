@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.bookify.data.model.UserModel;
+import com.example.bookify.data.remote.dto.ApiResponse;
 import com.example.bookify.data.remote.dto.UserCreationRequest;
 import com.example.bookify.data.repository.AuthRepository;
 import com.example.bookify.utils.ErrorUtils;
@@ -185,8 +186,13 @@ public class AuthViewModel extends ViewModel {
         boolean isValid = true;
 
         if (username == null || username.trim().isEmpty()) {
-            loginUsernameError.setValue("Please enter your username");
+            loginUsernameError.setValue("Please enter your username or email");
             isValid = false;
+        } else if (username.contains("@")) {
+            if (!EMAIL_PATTERN.matcher(username.trim()).matches()) {
+                loginUsernameError.setValue("Please enter a valid email address");
+                isValid = false;
+            }
         } else if (username.trim().length() < 4) {
             loginUsernameError.setValue("Username must be at least 4 characters");
             isValid = false;
@@ -215,13 +221,21 @@ public class AuthViewModel extends ViewModel {
                                 },
                                 throwable -> {
                                     isLoading.setValue(false);
-                                    String msg = ErrorUtils.parseError(throwable, "Login failed");
+                                    ApiResponse<?> apiResponse = ErrorUtils.parseApiResponse(throwable);
+                                    String msg = (apiResponse != null && apiResponse.getMessage() != null)
+                                            ? apiResponse.getMessage()
+                                            : ErrorUtils.parseError(throwable, "Login failed");
                                     errorMessage.setValue(msg);
 
-                                    if (msg.toLowerCase().contains("not verified") || msg.contains("1035")) {
-                                        this.registerEmail = username;
-                                        unverifiedEmailEvent.setValue(username);
-                                    } else if (msg.toLowerCase().contains("unauthenticated") || msg.toLowerCase().contains("invalid") || msg.contains("1006")) {
+                                    if ((apiResponse != null && apiResponse.getCode() == 1035)
+                                            || msg.toLowerCase().contains("not verified") || msg.contains("1035")) {
+                                        String email = ErrorUtils.extractEmailFromResult(apiResponse);
+                                        if (email == null || email.trim().isEmpty()) {
+                                            email = username;
+                                        }
+                                        this.registerEmail = email;
+                                        unverifiedEmailEvent.setValue(email);
+                                    } else if (msg.toLowerCase().contains("unauthenticated") || msg.toLowerCase().contains("invalid") || msg.contains("1006") || msg.contains("1042")) {
                                         apiError.setValue("Login failed. Please check your credentials.");
                                         loginUsernameError.setValue("Invalid username or password");
                                         loginPasswordError.setValue("Invalid username or password");
@@ -399,7 +413,6 @@ public class AuthViewModel extends ViewModel {
                                     isLoading.setValue(false);
                                     String msg = ErrorUtils.parseError(throwable, "Verification failed");
                                     errorMessage.setValue(msg);
-                                    apiError.setValue(msg);
                                     otpError.setValue(msg);
                                 }
                         )
@@ -482,7 +495,6 @@ public class AuthViewModel extends ViewModel {
                             isLoading.setValue(false);
                             String msg = ErrorUtils.parseError(error, "Failed to verify OTP");
                             otpError.setValue(msg);
-                            apiError.setValue(msg);
                         })
         );
     }

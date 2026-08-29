@@ -44,6 +44,8 @@
     <string name="login_subtitle">Start your reading journey today.</string>
     <string name="label_username">Username</string>
     <string name="hint_username">Enter username</string>
+    <string name="label_username_or_email">Username or Email</string>
+    <string name="hint_username_or_email">Enter username or email</string>
     <string name="label_password">Password</string>
     <string name="hint_password">Enter password</string>
     <string name="forgot_password">Forgot password?</string>

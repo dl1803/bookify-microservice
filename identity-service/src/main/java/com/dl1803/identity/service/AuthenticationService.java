@@ -100,13 +100,14 @@ public class AuthenticationService {
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         log.info("Signerkey: {}", SIGNER_KEY);
-        var user = userRepository
-                .findByUsername(request.getUsername())
-                .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
-
-        if (!user.isEmailVerified()) {
-            throw new AppException(ErrorCode.USER_NOT_VERIFIED);
-        }
+        String identifier = request.getUsername();
+        var user = identifier.contains("@")
+                ? userRepository
+                        .findByEmail(identifier)
+                        .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS))
+                : userRepository
+                        .findByUsername(identifier)
+                        .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
 
         // Kh cho phép user login bằng form khi đã login bằng GG (chỉ cho một chiều)
         if (AuthProvider.GOOGLE.equals(user.getAuthProvider()) && user.getPassword() == null) {
@@ -115,6 +116,25 @@ public class AuthenticationService {
 
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (!authenticated) throw new AppException(ErrorCode.INVALID_CREDENTIALS);
+
+        if (!user.isEmailVerified()) {
+            // Nếu OTP cũ đã hết hạn (hoặc chưa từng có OTP), tự động tạo OTP mới và gửi email
+            if (user.getOtpExpiryTime() == null || LocalDateTime.now().isAfter(user.getOtpExpiryTime())) {
+                try {
+                    String otpCode = generateAndSaveOTP(user);
+                    NotificationEvent notificationEvent = NotificationEvent.builder()
+                            .channel("EMAIL")
+                            .recipient(user.getEmail())
+                            .subject("Verify your email - Bookify")
+                            .body("Hello " + user.getUsername() + "!\nYour verification code is: " + otpCode)
+                            .build();
+                    kafkaTemplate.send("notification-delivery", notificationEvent);
+                } catch (AppException e) {
+                    log.info("OTP cooldown active, skip auto-resend during login");
+                }
+            }
+            throw new AppException(ErrorCode.USER_NOT_VERIFIED, Map.of("email", user.getEmail()));
+        }
 
         var accessToken = generateAccessToken(user);
         var refreshToken = generateRefreshToken(user);

@@ -47,8 +47,15 @@ public class OtpVerifyFragment extends Fragment {
         // nếu dùng requireActivity() -> lấy ViewModel từ Activity hiện tại (chứa nhiều Fragment dùng chung Activity: buộc các fragment khác muốn share data phải dùng requireActivity() giống như bên nhận)
         authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
 
-        String email = authViewModel.getRegisterEmail();
-        binding.tvSubtitle.setText("We sent a 4-digit verification code to " + email + ". Please enter it below.");
+        String email;
+        if (getArguments() != null && getArguments().getString("email") != null) {
+            email = getArguments().getString("email");
+            authViewModel.setRegisterEmail(email);
+        } else {
+            email = authViewModel.getRegisterEmail();
+        }
+
+        binding.tvSubtitle.setText("We sent a 4-digit verification code to " + (email != null ? email : "") + ". Please enter it below.");
 
         setupClickListeners();
         observeViewModel();
@@ -94,12 +101,14 @@ public class OtpVerifyFragment extends Fragment {
         authViewModel.getOtpError().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
                 Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+                authViewModel.clearOtpErrors();
             }
         });
 
         authViewModel.getApiError().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
                 Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+                authViewModel.clearOtpErrors();
             }
         });
 
