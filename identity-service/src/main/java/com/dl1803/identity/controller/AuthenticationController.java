@@ -13,6 +13,7 @@ import com.dl1803.identity.dto.request.*;
 import com.dl1803.identity.dto.response.ApiResponse;
 import com.dl1803.identity.dto.response.AuthenticationResponse;
 import com.dl1803.identity.dto.response.IntrospectResponse;
+import com.dl1803.identity.dto.response.VerifyResetOtpResponse;
 import com.dl1803.identity.service.AuthenticationService;
 import com.nimbusds.jose.JOSEException;
 
@@ -79,8 +80,19 @@ public class AuthenticationController {
                 .build();
     }
 
+    @PostMapping("/verify-reset-otp")
+    public ApiResponse<VerifyResetOtpResponse> verifyResetOtp(@RequestBody @Valid VerifyResetOtpRequest request) {
+        VerifyResetOtpResponse result = authenticationService.verifyResetOtp(request);
+        return ApiResponse.<VerifyResetOtpResponse>builder()
+                .code(1000)
+                .message("OTP verified successfully")
+                .result(result)
+                .build();
+    }
+
     @PostMapping("/reset-password")
-    public ApiResponse<Void> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
+    public ApiResponse<Void> resetPassword(@RequestBody @Valid ResetPasswordRequest request)
+            throws ParseException, JOSEException {
         authenticationService.resetPassword(request);
         return ApiResponse.<Void>builder()
                 .code(1000)

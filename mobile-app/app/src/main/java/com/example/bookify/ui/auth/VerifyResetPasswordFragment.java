@@ -38,6 +38,7 @@ public class VerifyResetPasswordFragment extends Fragment {
         authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
         binding.tvSubtitle.setText("We sent a 4-digit verification code to " + authViewModel.getRegisterEmail() + " to authorize your password change. Please enter it below.");
         setupClickListeners();
+        setupObservers();
 
         // Tự động focus vào ô OTP và mở bàn phím
         binding.pinViewOtp.post(() -> {
@@ -57,26 +58,61 @@ public class VerifyResetPasswordFragment extends Fragment {
         binding.btnVerify.setOnClickListener(v -> {
             String otp = binding.pinViewOtp.getText() != null ? binding.pinViewOtp.getText().toString() : "";
             if (otp.length() == 4) {
-                // Lưu OTP vào ViewModel và chuyển luôn sang màn hình Đổi Mật Khẩu
-                authViewModel.saveResetOtp(otp);
-                Navigation.findNavController(v).navigate(R.id.action_verifyResetPasswordFragment_to_createPasswordFragment);
+                authViewModel.verifyResetOtp(otp);
             } else {
                 Toast.makeText(requireContext(), "Please enter all 4 OTP numbers", Toast.LENGTH_SHORT).show();
             }
         });
         binding.tvResend.setOnClickListener(v -> {
             authViewModel.forgotPassword(authViewModel.getRegisterEmail());
-            startResendTimer();
-            Toast.makeText(requireContext(), "OTP sent successfully!", Toast.LENGTH_SHORT).show();
+            // startResendTimer() and Toast will be handled in observer
         });
     }
+
+    private void setupObservers() {
+        authViewModel.getVerifyResetOtpSuccess().observe(
+                getViewLifecycleOwner(), isSuccess -> {
+                    if (isSuccess) {
+                        authViewModel.resetVerifyResetOtpState();
+                        Navigation.findNavController(requireView()).navigate(R.id.action_verifyResetPasswordFragment_to_createPasswordFragment);
+                    }
+                }
+        );
+
+        authViewModel.getOtpError().observe(getViewLifecycleOwner(), errorMsg -> {
+            if (errorMsg != null && !errorMsg.isEmpty()) {
+                Toast.makeText(requireContext(), errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        authViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            binding.btnVerify.setEnabled(!isLoading);
+            binding.btnVerify.setText(isLoading ? "Verifying..." : "Verify");
+        });
+
+        authViewModel.getForgotPasswordSuccess().observe(getViewLifecycleOwner(), isSuccess -> {
+            if (isSuccess) {
+                authViewModel.resetForgotPasswordState();
+                startResendTimer();
+                Toast.makeText(requireContext(), "OTP sent successfully!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        authViewModel.getForgotEmailError().observe(getViewLifecycleOwner(), errorMsg -> {
+            if (errorMsg != null && !errorMsg.isEmpty()) {
+                Toast.makeText(requireContext(), errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+
     private void startResendTimer() {
         if (binding == null || !isAdded()) return;
         binding.tvResend.setEnabled(false);
         binding.tvResend.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.text_disabled));
 
         if (countDownTimer != null) countDownTimer.cancel();
-        countDownTimer = new CountDownTimer(30000, 1000) {
+        countDownTimer = new CountDownTimer(60000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 if (binding != null && isAdded()) {

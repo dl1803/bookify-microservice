@@ -40,7 +40,10 @@ public enum ErrorCode {
     INVALID_GOOGLE_TOKEN(1039, "Google authentication failed. Please try again", HttpStatus.BAD_REQUEST),
     GOOGLE_AUTH_FAILED(1040, "Unable to connect to Google. Please try again later", HttpStatus.INTERNAL_SERVER_ERROR),
     ACCOUNT_LINKED_TO_DIFFERENT_PROVIDER(
-            1041, "This email is already registered with a different login method", HttpStatus.CONFLICT);
+            1041, "This email is already registered with a different login method", HttpStatus.CONFLICT),
+
+    // === Reset Password ===
+    INVALID_RESET_TOKEN(1049, "Invalid or expired reset token. Please try again", HttpStatus.BAD_REQUEST);
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

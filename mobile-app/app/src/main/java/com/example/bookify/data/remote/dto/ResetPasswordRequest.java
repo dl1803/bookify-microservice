@@ -3,18 +3,14 @@ package com.example.bookify.data.remote.dto;
 import com.google.gson.annotations.SerializedName;
 
 public class ResetPasswordRequest {
-    @SerializedName("email")
-    private String email;
-
-    @SerializedName("otp")
-    private String otp;
+    @SerializedName("resetToken")
+    private String resetToken;
 
     @SerializedName("newPassword")
     private String newPassword;
 
-    public ResetPasswordRequest(String email, String otp, String newPassword) {
-        this.email = email;
-        this.otp = otp;
+    public ResetPasswordRequest(String resetToken, String newPassword) {
+        this.resetToken = resetToken;
         this.newPassword = newPassword;
     }
 }
