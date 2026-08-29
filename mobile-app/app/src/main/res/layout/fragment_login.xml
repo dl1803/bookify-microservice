@@ -74,7 +74,7 @@
                 android:id="@+id/tvUsernameLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/label_username"
+                android:text="@string/label_username_or_email"
                 android:textAppearance="?attr/textAppearanceLabelSmall"
                 android:textColor="@color/on_surface_variant" />
 
@@ -95,8 +95,8 @@
                     android:id="@+id/etUsername"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/hint_username"
-                    android:inputType="text" />
+                    android:hint="@string/hint_username_or_email"
+                    android:inputType="textEmailAddress" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Password Label -->

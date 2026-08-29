@@ -105,7 +105,9 @@ public class LoginFragment extends Fragment {
             if (email != null && !email.isEmpty()) {
                 authViewModel.resetUnverifiedEmailEvent();
                 Toast.makeText(requireContext(), "Please verify your email before logging in", Toast.LENGTH_LONG).show();
-                Navigation.findNavController(requireView()).navigate(R.id.action_loginFragment_to_otpVerifyFragment);
+                Bundle bundle = new Bundle();
+                bundle.putString("email", email);
+                Navigation.findNavController(requireView()).navigate(R.id.action_loginFragment_to_otpVerifyFragment, bundle);
             }
         });
 

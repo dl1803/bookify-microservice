@@ -82,6 +82,7 @@ public class VerifyResetPasswordFragment extends Fragment {
         authViewModel.getOtpError().observe(getViewLifecycleOwner(), errorMsg -> {
             if (errorMsg != null && !errorMsg.isEmpty()) {
                 Toast.makeText(requireContext(), errorMsg, Toast.LENGTH_SHORT).show();
+                authViewModel.clearOtpErrors();
             }
         });
 
@@ -101,6 +102,7 @@ public class VerifyResetPasswordFragment extends Fragment {
         authViewModel.getForgotEmailError().observe(getViewLifecycleOwner(), errorMsg -> {
             if (errorMsg != null && !errorMsg.isEmpty()) {
                 Toast.makeText(requireContext(), errorMsg, Toast.LENGTH_SHORT).show();
+                authViewModel.clearForgotPasswordErrors();
             }
         });
     }
