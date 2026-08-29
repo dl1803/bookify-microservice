@@ -43,7 +43,7 @@
             android:id="@+id/tvPostTime"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textColor="@color/brown_primary"
+            android:textColor="@color/primary"
             android:textStyle="bold"
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="@id/tvUserName"
@@ -109,7 +109,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textColor="@color/brown_primary"
+                android:textColor="@color/primary"
                 android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@id/tvBookTitle"
@@ -130,27 +130,27 @@
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/ic_star"
-                    app:tint="@color/brown_primary" />
+                    app:tint="@color/primary" />
                 <ImageView
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/ic_star"
-                    app:tint="@color/brown_primary" />
+                    app:tint="@color/primary" />
                 <ImageView
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/ic_star"
-                    app:tint="@color/brown_primary" />
+                    app:tint="@color/primary" />
                 <ImageView
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/ic_star"
-                    app:tint="@color/brown_primary" />
+                    app:tint="@color/primary" />
                 <ImageView
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/ic_rating_stars"
-                    app:tint="@color/brown_primary" />
+                    app:tint="@color/primary" />
             </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,12 @@
+# Đây là file template chứa danh sách các key bảo mật cần thiết cho dự án.
+# HƯỚNG DẪN:
+# 1. Copy nội dung file này và tạo thành file mới tên là 'local.properties'
+# 2. Xin Leader hoặc xem trong tài liệu nội bộ để điền giá trị thật vào các key bên dưới.
+# LƯU Ý: Tuyệt đối KHÔNG push file 'local.properties' lên Git!
+
+# --- Google Credentials ---
+GOOGLE_WEB_CLIENT_ID=nhap_google_client_id_vao_day
+
+# --- Các cấu hình bảo mật khác trong tương lai ---
+# STRIPE_API_KEY=...
+# GEMINI_API_KEY=...

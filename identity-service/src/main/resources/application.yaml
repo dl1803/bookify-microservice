@@ -28,3 +28,6 @@ app:
     profile:
       url: http://localhost:8081/profile
 
+google:
+  client-id: ${GOOGLE_CLIENT_ID}
+

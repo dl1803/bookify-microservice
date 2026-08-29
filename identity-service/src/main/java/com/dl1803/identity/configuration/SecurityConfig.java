@@ -25,6 +25,8 @@ public class SecurityConfig {
         "/auth/resend-verification",
         "/auth/forgot-password",
         "/auth/reset-password",
+        "/auth/verify-reset-otp",
+        "/auth/google",
         "/swagger-ui/**",
         "/v3/api-docs/**"
     };

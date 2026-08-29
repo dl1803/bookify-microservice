@@ -1,6 +1,5 @@
 package com.dl1803.identity.dto.request;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -13,13 +12,8 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ResetPasswordRequest {
-    @NotBlank(message = "EMAIL_IS_REQUIRED")
-    @Email(message = "INVALID_EMAIL")
-    String email;
-
-    @NotBlank(message = "INVALID_OTP")
-    @Size(min = 4, max = 4)
-    String otp;
+    @NotBlank(message = "INVALID_RESET_TOKEN")
+    String resetToken;
 
     @Size(min = 6, message = "PASSWORD_INVALID")
     String newPassword;

@@ -26,7 +26,7 @@
         android:layout_width="8dp"
         android:layout_height="12dp"
         android:src="@drawable/ic_chat_tail_right"
-        app:tint="@color/brown_primary"
+        app:tint="@color/primary"
         app:layout_constraintTop_toTopOf="@id/bubbleLayout"
         app:layout_constraintEnd_toStartOf="@id/ivAvatar" />
 

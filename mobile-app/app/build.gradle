@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.hilt.android)
+    alias(libs.plugins.secrets)
 }
 
 android {
@@ -27,6 +28,11 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+
+    buildFeatures {
+        viewBinding true
+        buildConfig true
+    }
 }
 
 dependencies {
@@ -38,6 +44,8 @@ dependencies {
     
     // Hilt
     implementation libs.hilt.android
+    implementation libs.navigation.fragment
+    implementation libs.navigation.ui
     annotationProcessor libs.hilt.compiler
     
     // Retrofit & OkHttp
@@ -57,4 +65,15 @@ dependencies {
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
+    
+    // PinView
+    implementation libs.pinview
+
+    // Shimmer
+    implementation libs.shimmer
+
+    // Google Sign-In (Credential Manager)
+    implementation libs.credentials
+    implementation libs.credentials.play.services.auth
+    implementation libs.googleid
 }

@@ -1,36 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="brown_primary">#93452D</color>
-    <color name="brown_primary_container">#B25D43</color>
-    <color name="brown_light">#F5E6D3</color>
-    <color name="brown_bold">#74554b</color>
-    <color name="surface_bg">#FCF9F8</color>
-    <color name="on_surface">#1B1C1C</color>
-    <color name="on_surface_variant">#55433E</color>
-    <color name="tertiary">#74554B</color>
-    <color name="primary_fixed">#FFDBD1</color>
-    <color name="surface_container_low">#F6F3F2</color>
-    <color name="surface_container_lowest">#FFFFFF</color>
-    <color name="surface_container">#F0EDED</color>
-    <color name="outline">#88726D</color>
-    <color name="outline_variant">#DAC1BA</color>
-    <color name="star_yellow">#FFC107</color>
-    <color name="like_red">#E53935</color>
-    <color name="text_dark_gray">#424242</color>
-    <color name="error_red">#D32F2F</color>
+    <!-- ============================================== -->
+    <!-- 1. MÀU NỀN & KHỐI (Background & Containers) -->
+    <!-- Dùng cho nền ứng dụng, nền thẻ Card, màn hình -->
+    <!-- ============================================== -->
+    <color name="background">#fcf9f8</color>               <!-- Trắng ngà: Màu nền gốc của mọi màn hình -->
+    <color name="surface">#fcf9f8</color>                  <!-- Trắng ngà: Nền của thẻ, nút phụ -->
+    <color name="surface_variant">#e4e2e1</color>          <!-- Xám xỉn: Nền thẻ biến thể -->
+    <color name="inverse_surface">#303030</color>          <!-- Xám đen: Nền tương phản (VD: Snackbar) -->
     
-    <color name="surface_container_high">#EAE8E8</color>
-    <color name="background">#FCF9F8</color>
-    <color name="on_primary">#FFFFFF</color>
-    <color name="outline_variant_10">#1ADAC1BA</color>
-    <color name="outline_variant_30">#4DDAC1BA</color>
+    <!-- Các cấp độ nền (từ nhạt đến đậm) -->
+    <color name="surface_container_lowest">#ffffff</color> <!-- Trắng tinh: Sáng nhất -->
+    <color name="surface_container_low">#f6f3f2</color>    <!-- Xám cực nhạt -->
+    <color name="surface_container">#f0eded</color>        <!-- Xám nhạt vừa (VD: Nền thanh BottomNav) -->
+    <color name="surface_container_high">#eae7e7</color>   <!-- Xám trung bình -->
+    <color name="surface_container_highest">#e4e2e1</color> <!-- Xám đậm nhất trong dải nền -->
+    <color name="surface_dim">#dcd9d9</color>              <!-- Nền xám mờ -->
+    <color name="surface_bright">#fcf9f8</color>           <!-- Nền sáng chói -->
+    <color name="surface_tint">#96472f</color>             <!-- Màu overlay bóng mờ -->
+
+    <!-- Nền các khối phụ (Containers) -->
+    <color name="primary_fixed">#ffdbd1</color>            <!-- Cam nhạt: Nền thẻ con nổi bật -->
+    <color name="primary_fixed_dim">#ffb59f</color>        <!-- Cam nhạt đậm hơn -->
+    <color name="secondary_container">#e1dfdb</color>      <!-- Xám nhạt: Nền thẻ phụ, chip -->
+    <color name="secondary_fixed">#e4e2dd</color>          <!-- Xám be -->
+    <color name="secondary_fixed_dim">#c8c6c2</color>      <!-- Xám be đậm hơn -->
+    <color name="tertiary_container">#8f6d62</color>       <!-- Nâu xám nhạt -->
+    <color name="tertiary_fixed">#ffdbd0</color>           <!-- Cam nhạt -->
+    <color name="tertiary_fixed_dim">#e7bdb1</color>       <!-- Cam nhạt đậm hơn -->
+    <color name="error_container">#ffdad6</color>          <!-- Đỏ nhạt: Nền thẻ báo lỗi -->
+
+    <!-- ============================================== -->
+    <!-- 2. MÀU CHỮ & ICON (Text & Icons) -->
+    <!-- (Tất cả các màu bắt đầu bằng chữ "on_") -->
+    <!-- ============================================== -->
+    <!-- Chữ trên nền sáng thông thường -->
+    <color name="on_background">#1b1c1c</color>            <!-- Đen xám: Màu chữ chính (Tiêu đề, Text thường) -->
+    <color name="on_surface">#1b1c1c</color>               <!-- Đen xám: Chữ trên nền surface -->
+    <color name="on_surface_variant">#55433e</color>       <!-- Xám nâu nhạt: Màu chữ phụ (Subtitle, Hint text) -->
+    <color name="text_disabled">#a39996</color>            <!-- Xám nhạt: Chữ bị vô hiệu hóa hoặc Text mờ -->
     
-    <!-- Messages UI -->
-    <color name="on_tertiary_fixed_variant">#5D4037</color>
-    <color name="online_green">#22c55e</color>
-    <color name="fab_message">#C36A4F</color>
-    <color name="badge_error">#ba1a1a</color>
-    <color name="badge_on_error">#ffffff</color>
+    <!-- Chữ trên nền tối hoặc nền có màu (Nút bấm, thẻ) -->
+    <color name="on_primary">#ffffff</color>               <!-- Trắng: Chữ trên nút Primary (Nâu đậm) -->
+    <color name="on_secondary">#ffffff</color>             <!-- Trắng: Chữ trên nút Secondary -->
+    <color name="on_tertiary">#ffffff</color>              <!-- Trắng: Chữ trên nút Tertiary -->
+    <color name="on_error">#ffffff</color>                 <!-- Trắng: Chữ trên nền lỗi đỏ -->
+    <color name="badge_on_error">#ffffff</color>           <!-- Trắng: Số đếm trong chấm đỏ -->
+    <color name="inverse_on_surface">#f3f0f0</color>       <!-- Trắng xám: Chữ trên Snackbar đen -->
+    
+    <!-- Chữ trên các nền Container nhạt -->
+    <color name="on_primary_container">#fffbff</color>     <!-- Trắng ngà: Chữ trên nền primary_container -->
+    <color name="on_primary_fixed">#3a0a00</color>         <!-- Nâu đen: Chữ trên nền primary_fixed -->
+    <color name="on_primary_fixed_variant">#78311a</color> <!-- Nâu đỏ -->
+    <color name="on_secondary_container">#63635f</color>   <!-- Xám rêu đậm -->
+    <color name="on_secondary_fixed">#1b1c19</color>       <!-- Đen -->
+    <color name="on_secondary_fixed_variant">#474744</color> <!-- Xám đậm -->
+    <color name="on_tertiary_container">#fffbff</color>    <!-- Trắng ngà -->
+    <color name="on_tertiary_fixed">#2c160e</color>        <!-- Nâu đậm -->
+    <color name="on_tertiary_fixed_variant">#5d4037</color> <!-- Nâu đỏ -->
+    <color name="on_error_container">#93000a</color>       <!-- Đỏ cực đậm: Chữ trên nền thẻ lỗi nhạt -->
+
+    <!-- ============================================== -->
+    <!-- 3. MÀU NÚT BẤM & THÀNH PHẦN CHÍNH (Primary/Buttons) -->
+    <!-- ============================================== -->
+    <color name="primary">#93452d</color>                  <!-- Nâu đậm: Dùng cho nút bấm chính, màu chủ đạo -->
+    <color name="primary_container">#b25d43</color>        <!-- Nâu sáng hơn: Nút phụ nổi bật -->
+    <color name="inverse_primary">#ffb59f</color>          <!-- Cam sáng -->
+    <color name="secondary">#5e5e5b</color>                <!-- Xám rêu: Màu phụ chính (Nút cancel) -->
+    <color name="tertiary">#74554b</color>                 <!-- Nâu xám: Màu nhấn trang trí -->
+
+    <!-- ============================================== -->
+    <!-- 4. MÀU VIỀN (Outline) -->
+    <!-- Dùng cho viền Button, viền Input, Divider kẻ ngang -->
+    <!-- ============================================== -->
+    <color name="outline">#88726d</color>                  <!-- Viền đậm (VD: Viền ô input đang focus) -->
+    <color name="outline_variant">#dac1ba</color>          <!-- Viền nhạt (VD: Viền ô nhập mặc định, divider) -->
+    <color name="outline_variant_10">#1ADAC1BA</color>     <!-- Viền nhạt trong suốt 10% -->
+    <color name="outline_variant_30">#4DDAC1BA</color>     <!-- Viền nhạt trong suốt 30% -->
+
+    <!-- ============================================== -->
+    <!-- 5. MÀU LỖI & TIỆN ÍCH (Error & Misc) -->
+    <!-- ============================================== -->
+    <color name="error">#ba1a1a</color>                    <!-- Đỏ đậm: Màu báo lỗi chính -->
+    <color name="badge_error">#ba1a1a</color>              <!-- Đỏ chấm thông báo -->
+    <color name="black">#FF000000</color>                  <!-- Đen tuyền -->
+    <color name="white">#FFFFFFFF</color>                  <!-- Trắng tuyền -->
+    <color name="like_red">#E53935</color>                 <!-- Đỏ tươi: Dành cho nút Thích -->
+    <color name="star_yellow">#FFC107</color>              <!-- Vàng: Dành cho sao đánh giá -->
+    <color name="online_green">#22c55e</color>             <!-- Xanh lá: Chấm online -->
+    <color name="fab_message">#C36A4F</color>              <!-- Cam đất: Nút nổi chat -->
 </resources>

@@ -27,11 +27,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class GlobalMenuDrawerFragment extends DialogFragment {
 
-    @Inject
-    com.example.bookify.data.repository.AuthRepository authRepository;
-    
-    @Inject
-    com.example.bookify.data.repository.ProfileRepository profileRepository;
+    private GlobalMenuViewModel viewModel;
 
     public static GlobalMenuDrawerFragment newInstance() {
         return new GlobalMenuDrawerFragment();
@@ -53,33 +49,62 @@ public class GlobalMenuDrawerFragment extends DialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         
+        viewModel = new androidx.lifecycle.ViewModelProvider(this).get(GlobalMenuViewModel.class);
+        
         setupClickListeners(view);
-        fetchProfileAndPopulateUI(view);
+        observeViewModel(view);
+        
+        viewModel.fetchProfile();
     }
 
     @android.annotation.SuppressLint("CheckResult")
-    private void fetchProfileAndPopulateUI(View view) {
-        profileRepository.getMyProfile()
-                .subscribeOn(io.reactivex.rxjava3.schedulers.Schedulers.io())
-                .observeOn(io.reactivex.rxjava3.android.schedulers.AndroidSchedulers.mainThread())
-                .subscribe(response -> {
-                    if (response.getResult() != null) {
-                        TextView txtMenuUserName = view.findViewById(R.id.txtMenuUserName);
-                        com.google.android.material.imageview.ShapeableImageView imgMenuAvatar = view.findViewById(R.id.imgMenuAvatar);
-                        
-                        String fullName = response.getResult().getFirstName() + " " + response.getResult().getLastName();
-                        txtMenuUserName.setText(fullName.trim());
-                        
-                        if (response.getResult().getAvatar() != null && !response.getResult().getAvatar().isEmpty()) {
-                            com.bumptech.glide.Glide.with(this)
-                                    .load(com.example.bookify.utils.UrlUtils.resolveLocalUrl(response.getResult().getAvatar()))
-                                    .placeholder(R.drawable.ic_menu_avatar_placeholder)
-                                    .into(imgMenuAvatar);
-                        }
-                    }
-                }, throwable -> {
-                    // Ignore or log error
-                });
+    private void observeViewModel(View view) {
+        viewModel.getProfileData().observe(getViewLifecycleOwner(), profile -> {
+            if (profile != null) {
+                TextView txtMenuUserName = view.findViewById(R.id.txtMenuUserName);
+                TextView txtMenuEmail = view.findViewById(R.id.txtMenuEmail);
+                com.google.android.material.imageview.ShapeableImageView imgMenuAvatar = view.findViewById(R.id.imgMenuAvatar);
+
+                // Null-safe: ghép tên tránh "null" khi lastName chưa có
+                String firstName = profile.getFirstName() != null ? profile.getFirstName().trim() : "";
+                String lastName = profile.getLastName() != null ? profile.getLastName().trim() : "";
+                String fullName = (firstName + " " + lastName).trim();
+                txtMenuUserName.setText(fullName.isEmpty() ? profile.getUsername() : fullName);
+
+                // Hiện email bên dưới tên (chủ yếu cho Google login)
+                String email = profile.getEmail();
+                if (email != null && !email.trim().isEmpty()) {
+                    txtMenuEmail.setText(email.trim());
+                    txtMenuEmail.setVisibility(android.view.View.VISIBLE);
+                } else {
+                    txtMenuEmail.setVisibility(android.view.View.GONE);
+                }
+
+                if (profile.getAvatar() != null && !profile.getAvatar().isEmpty()) {
+                    com.bumptech.glide.Glide.with(this)
+                            .load(com.example.bookify.utils.UrlUtils.resolveLocalUrl(profile.getAvatar()))
+                            .placeholder(R.drawable.ic_menu_avatar_placeholder)
+                            .error(R.drawable.ic_menu_avatar_placeholder)
+                            .into(imgMenuAvatar);
+                }
+            }
+        });
+
+
+        viewModel.getLogoutSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (success != null && success) {
+                // Reset ngay để tránh re-trigger nếu fragment được tái sử dụng
+                viewModel.resetLogoutState();
+                if (getActivity() != null) {
+                    showToast(getString(R.string.menu_logout) + " successful");
+                    android.content.Intent intent = new android.content.Intent(getActivity(), com.example.bookify.ui.auth.AuthActivity.class);
+                    intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    getActivity().finish();
+                }
+                dismiss();
+            }
+        });
     }
 
     private void setupClickListeners(View view) {
@@ -112,15 +137,7 @@ public class GlobalMenuDrawerFragment extends DialogFragment {
 
         view.findViewById(R.id.btnMenuLogout).setOnClickListener(v -> {
             v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
-            if (getActivity() != null) {
-                authRepository.logout();
-                showToast(getString(R.string.menu_logout) + " successful");
-                android.content.Intent intent = new android.content.Intent(getActivity(), com.example.bookify.ui.auth.LoginActivity.class);
-                intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                getActivity().finish();
-            }
-            dismiss();
+            viewModel.logout();
         });
         
         view.setOnClickListener(v -> {

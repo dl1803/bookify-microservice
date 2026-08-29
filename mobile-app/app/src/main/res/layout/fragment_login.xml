@@ -5,8 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@color/surface_bg"
-    tools:context=".ui.auth.LoginActivity">
+    android:background="?attr/colorSurface"
+    tools:context=".ui.auth.LoginFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -50,9 +50,12 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:text="Bookify"
-                android:textColor="@color/brown_primary"
+                android:textColor="@color/primary"
                 android:textSize="36sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:fontFamily="@font/playfair_display_semibold"
+                android:textFontWeight="700"
+                />
 
             <TextView
                 android:id="@+id/tvSubtitle"
@@ -67,92 +70,66 @@
                 android:gravity="center" />
 
             <!-- Username Label -->
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvUsernameLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/label_username"
-                android:textColor="@color/on_surface"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="6dp" />
+                android:text="@string/label_username_or_email"
+                android:textAppearance="?attr/textAppearanceLabelSmall"
+                android:textColor="@color/on_surface_variant" />
 
             <!-- Username Input Field -->
-            <FrameLayout
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilUsername"
+                style="@style/Bookify.TextInputLayout.Outlined"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="@drawable/bg_input_field"
-                android:layout_marginBottom="16dp">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="6dp"
+                app:boxBackgroundColor="?attr/colorSurfaceContainerLow"
+                app:errorEnabled="true"
+                app:hintEnabled="false"
+                app:startIconDrawable="@drawable/ic_person">
 
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_gravity="center_vertical|start"
-                    android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_person"
-                    app:tint="@color/outline" />
-
-                <EditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etUsername"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@null"
-                    android:hint="@string/hint_username"
-                    android:inputType="text"
-                    android:paddingStart="42dp"
-                    android:paddingEnd="12dp"
-                    android:textColor="@color/on_surface"
-                    android:textColorHint="@color/outline"
-                    android:textSize="14sp" />
-            </FrameLayout>
+                    android:layout_height="wrap_content"
+                    android:hint="@string/hint_username_or_email"
+                    android:inputType="textEmailAddress" />
+            </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Password Label -->
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvPasswordLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/label_password"
-                android:textColor="@color/on_surface"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="6dp" />
+                android:textAppearance="?attr/textAppearanceLabelSmall"
+                android:textColor="@color/on_surface_variant" />
 
             <!-- Password Input Field -->
-            <FrameLayout
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilPassword"
+                style="@style/Bookify.TextInputLayout.Outlined"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="@drawable/bg_input_field"
-                android:layout_marginBottom="8dp">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="2dp"
+                app:boxBackgroundColor="?attr/colorSurfaceContainerLow"
+                app:endIconMode="password_toggle"
+                app:endIconTint="@color/on_surface_variant"
+                app:errorEnabled="true"
+                app:hintEnabled="false"
+                app:startIconDrawable="@drawable/ic_lock">
 
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_gravity="center_vertical|start"
-                    android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_lock"
-                    app:tint="@color/outline" />
-
-                <EditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etPassword"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@null"
+                    android:layout_height="wrap_content"
                     android:hint="@string/hint_password"
-                    android:inputType="textPassword"
-                    android:paddingStart="42dp"
-                    android:paddingEnd="44dp"
-                    android:textColor="@color/on_surface"
-                    android:textColorHint="@color/outline"
-                    android:textSize="14sp" />
-
-                <ImageButton
-                    android:id="@+id/btnTogglePassword"
-                    android:layout_width="44dp"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center_vertical|end"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_visibility"
-                    app:tint="@color/outline"
-                    android:contentDescription="Toggle password visibility" />
-            </FrameLayout>
+                    android:inputType="textPassword" />
+            </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
                 android:id="@+id/tvForgotPassword"
@@ -160,7 +137,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
                 android:text="@string/forgot_password"
-                android:textColor="@color/brown_primary"
+                android:textColor="@color/primary"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:clickable="true"
@@ -261,7 +238,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/btn_register_now"
-                    android:textColor="@color/brown_primary"
+                    android:textColor="@color/primary"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:clickable="true"

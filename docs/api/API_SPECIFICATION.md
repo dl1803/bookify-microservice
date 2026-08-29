@@ -75,6 +75,7 @@ Tất cả API response đều dùng cấu trúc `ApiResponse<T>`:
 ```json
 {
   "code": 1000,
+  "error": "OPTIONAL_ERROR_KEY",
   "message": "Optional message",
   "result": { }
 }
@@ -83,6 +84,7 @@ Tất cả API response đều dùng cấu trúc `ApiResponse<T>`:
 | Field | Type | Mô tả |
 |---|---|---|
 | `code` | `int` | `1000` = thành công. Khác = lỗi (xem [1.4](#14-bảng-mã-lỗi)). |
+| `error` | `string?` | Machine-readable key của lỗi (VD: `INVALID_CREDENTIALS`). |
 | `message` | `string?` | Thông báo bổ sung (nullable). |
 | `result` | `T?` | Dữ liệu trả về (nullable). |
 
@@ -111,41 +113,56 @@ Tất cả API response đều dùng cấu trúc `ApiResponse<T>`:
 
 ### 1.4. Bảng mã lỗi
 
-| Code | Tên | HTTP | Mô tả |
+| Code | Name | HTTP | Description |
 |---|---|---|---|
-| `1000` | SUCCESS | 200 | Thành công |
-| `1001` | INVALID_KEY | 400 | Key message không hợp lệ |
-| `1002` | USER_EXISTED | 400 | User đã tồn tại |
-| `1003` | USERNAME_INVALID | 400 | Username ≥ 4 ký tự |
-| `1004` | PASSWORD_INVALID | 400 | Password ≥ 6 ký tự |
-| `1005` | USER_NOT_EXISTED | 404 | User không tồn tại |
-| `1006` | UNAUTHENTICATED | 401 | Chưa xác thực / Token hết hạn |
-| `1007` | UNAUTHORIZED | 403 | Không có quyền truy cập |
-| `1008` | INVALID_DOB | 400 | Tuổi không hợp lệ (≥ 18) |
-| `1009` | INVALID_EMAIL | 400 | Email không hợp lệ |
-| `1010` | FILE_NOT_FOUND | 404 | File không tồn tại |
-| `1011` | CONVERSATION_NOT_FOUND | 404 | Cuộc hội thoại không tồn tại |
-| `1012` | POST_NOT_FOUND | 404 | Bài viết không tồn tại |
-| `1013` | COMMENT_NOT_FOUND | 404 | Comment không tồn tại |
-| `1014` | BOOK_NOT_FOUND | 404 | Sách không tồn tại |
-| `1015` | ALREADY_LIKED | 400 | Đã like rồi |
-| `1016` | NOT_LIKED | 400 | Chưa like |
-| `1017` | SELF_ACTION_NOT_ALLOWED | 400 | Không thể thao tác với chính mình |
-| `1018` | FRIEND_REQUEST_EXISTED | 400 | Lời mời kết bạn đã tồn tại |
-| `1019` | FRIEND_REQUEST_NOT_FOUND | 404 | Lời mời kết bạn không tồn tại |
-| `1020` | ALREADY_FRIENDS | 400 | Đã là bạn bè |
-| `1021` | CANNOT_SEND_EMAIL | 400 | Không thể gửi email |
-| `1024` | ISBN_EXISTED | 400 | ISBN đã tồn tại |
-| `1025` | ALREADY_ON_SHELF | 400 | Sách đã có trong tủ |
-| `1026` | NOTIFICATION_NOT_FOUND | 404 | Thông báo không tồn tại |
-| `1027` | USER_BLOCKED | 403 | User đã bị block |
-| `1028` | INVALID_FILE_TYPE | 400 | Loại file không được hỗ trợ |
-| `1029` | FILE_TOO_LARGE | 400 | File vượt quá dung lượng cho phép |
-| `1031` | MESSAGE_NOT_FOUND | 404 | Tin nhắn không tồn tại |
-| `1032` | MESSAGE_EDIT_EXPIRED | 400 | Đã quá thời gian cho phép chỉnh sửa tin nhắn |
-| `1033` | INVALID_OTP | 400 | OTP không hợp lệ hoặc đã hết hạn |
-| `1034` | OTP_EXPIRED | 400 | OTP hết hạn |
-| `9999` | UNCATEGORIZED_EXCEPTION | 500 | Lỗi hệ thống không xác định |
+| `1000` | SUCCESS | 200 | Success |
+| `1001` | INVALID_KEY | 400 | Invalid message key |
+| `1002` | USER_EXISTED | 400 | Username or email is already taken |
+| `1003` | USERNAME_INVALID | 400 | Username must be at least 4 characters |
+| `1004` | PASSWORD_INVALID | 400 | Password must be at least 6 characters |
+| `1005` | USER_NOT_EXISTED | 404 | User not found |
+| `1006` | UNAUTHENTICATED | 401 | Authentication is required |
+| `1007` | UNAUTHORIZED | 403 | You do not have permission to access this resource |
+| `1008` | INVALID_DOB | 400 | Your age must be at least 18 |
+| `1009` | INVALID_EMAIL | 400 | Please enter a valid email address |
+| `1010` | FILE_NOT_FOUND | 404 | File not found |
+| `1011` | CONVERSATION_NOT_FOUND | 404 | Conversation not found |
+| `1012` | POST_NOT_FOUND | 404 | Post not found |
+| `1013` | COMMENT_NOT_FOUND | 404 | Comment not found |
+| `1014` | BOOK_NOT_FOUND | 404 | Book not found |
+| `1015` | ALREADY_LIKED | 400 | Already liked |
+| `1016` | NOT_LIKED | 400 | Not liked |
+| `1017` | SELF_ACTION_NOT_ALLOWED | 400 | Cannot perform action on yourself |
+| `1018` | FRIEND_REQUEST_EXISTED | 400 | Friend request already exists |
+| `1019` | FRIEND_REQUEST_NOT_FOUND | 404 | Friend request not found |
+| `1020` | ALREADY_FRIENDS | 400 | Already friends |
+| `1021` | CANNOT_SEND_EMAIL | 400 | Cannot send email |
+| `1024` | ISBN_EXISTED | 400 | ISBN already exists |
+| `1025` | ALREADY_ON_SHELF | 400 | Book already on shelf |
+| `1026` | NOTIFICATION_NOT_FOUND | 404 | Notification not found |
+| `1027` | USER_BLOCKED | 403 | User has been blocked |
+| `1028` | INVALID_FILE_TYPE | 400 | Unsupported file type |
+| `1029` | FILE_TOO_LARGE | 400 | File size exceeds limit |
+| `1031` | MESSAGE_NOT_FOUND | 404 | Message not found |
+| `1032` | MESSAGE_EDIT_EXPIRED | 400 | Message edit time expired |
+| `1033` | INVALID_OTP | 400 | Invalid OTP code |
+| `1034` | OTP_EXPIRED | 400 | OTP has expired. Please request a new one |
+| `1035` | USER_NOT_VERIFIED | 403 | Email is not verified. Please check your inbox |
+| `1036` | USER_ALREADY_VERIFIED | 400 | Email is already verified |
+| `1037` | OTP_SEND_COOLDOWN | 429 | Please wait before requesting a new OTP |
+| `1038` | TOO_MANY_OTP_ATTEMPTS | 400 | Too many failed attempts. Please request a new OTP |
+| `1039` | INVALID_GOOGLE_TOKEN | 400 | Google authentication failed. Please try again |
+| `1040` | GOOGLE_AUTH_FAILED | 500 | Unable to connect to Google. Please try again later |
+| `1041` | ACCOUNT_LINKED_TO_DIFFERENT_PROVIDER | 409 | This email is already registered with a different login method |
+| `1042` | INVALID_CREDENTIALS | 401 | Username or password is incorrect |
+| `1043` | TOKEN_EXPIRED | 401 | Your session has expired. Please login again |
+| `1044` | TOKEN_REVOKED | 401 | Your session has been revoked. Please login again |
+| `1045` | INVALID_REFRESH_TOKEN | 401 | Invalid refresh token |
+| `1046` | WRONG_CURRENT_PASSWORD | 400 | Current password is incorrect |
+| `1047` | PASSWORD_CHANGED_RELOGIN | 401 | Password has been changed. Please login again |
+| `1048` | EMAIL_IS_REQUIRED | 400 | Email address is required |
+
+| `9999` | UNCATEGORIZED_EXCEPTION | 500 | An unexpected error occurred. Please try again later |
 
 ---
 
@@ -179,7 +196,7 @@ Tất cả API response đều dùng cấu trúc `ApiResponse<T>`:
 }
 ```
 
-**Errors:** `1005` USER_NOT_EXISTED, `1006` UNAUTHENTICATED
+**Errors:** `1042` INVALID_CREDENTIALS, `1035` USER_NOT_VERIFIED, `1041` ACCOUNT_LINKED_TO_DIFFERENT_PROVIDER
 
 ---
 

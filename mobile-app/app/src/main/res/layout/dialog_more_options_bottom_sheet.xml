@@ -64,7 +64,7 @@
                 android:layout_height="24dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_bookmark"
-                app:tint="@color/brown_primary" />
+                app:tint="@color/primary" />
         </FrameLayout>
 
         <LinearLayout
@@ -118,7 +118,7 @@
                 android:layout_height="24dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_share"
-                app:tint="@color/brown_primary" />
+                app:tint="@color/primary" />
         </FrameLayout>
 
         <LinearLayout
@@ -172,7 +172,7 @@
                 android:layout_height="24dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_profile"
-                app:tint="@color/brown_primary" />
+                app:tint="@color/primary" />
         </FrameLayout>
 
         <LinearLayout

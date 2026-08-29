@@ -5,7 +5,7 @@
     android:id="@+id/main_home_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/surface_bg"
+    android:background="@color/surface"
     android:fitsSystemWindows="true"
     tools:context=".ui.home.HomeActivity">
 
@@ -23,7 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:navigationIcon="@drawable/ic_menu"
-            app:navigationIconTint="@color/brown_primary">
+            app:navigationIconTint="@color/primary">
 
             <ImageView
                 android:layout_width="160dp"
@@ -94,7 +94,7 @@
             android:layout_height="wrap_content"
             android:contentDescription="Create Post"
             android:src="@drawable/ic_create"
-            app:backgroundTint="@color/brown_primary"
+            app:backgroundTint="@color/primary"
             app:tint="@android:color/white"
             app:layout_anchor="@id/bottomNavigation"
             app:layout_anchorGravity="center"

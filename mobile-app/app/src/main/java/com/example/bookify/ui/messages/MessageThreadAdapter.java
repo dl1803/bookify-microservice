@@ -88,7 +88,7 @@ public class MessageThreadAdapter extends RecyclerView.Adapter<MessageThreadAdap
                 tvName.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.on_surface));
                 tvLastMessage.setTypeface(null, Typeface.BOLD);
                 tvLastMessage.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.on_surface));
-                tvTime.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.brown_primary));
+                tvTime.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.primary));
             } else {
                 tvName.setTypeface(null, Typeface.NORMAL);
                 tvName.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.on_surface));

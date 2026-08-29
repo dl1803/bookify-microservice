@@ -227,7 +227,7 @@
             android:layout_height="48dp"
             android:text="Save"
             android:textColor="@color/white"
-            app:backgroundTint="@color/brown_primary"
+            app:backgroundTint="@color/primary"
             app:cornerRadius="24dp" />
     </LinearLayout>
 </LinearLayout>

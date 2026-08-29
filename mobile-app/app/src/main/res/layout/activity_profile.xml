@@ -6,7 +6,7 @@
     android:id="@+id/main_profile_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/surface_bg"
+    android:background="@color/surface"
     android:fitsSystemWindows="true"
     tools:context=".ui.profile.ProfileActivity">
 
@@ -47,7 +47,7 @@
                     android:layout_height="16dp"
                     android:contentDescription="Friends"
                     android:src="@drawable/ic_menu_friends"
-                    app:tint="@color/brown_primary" />
+                    app:tint="@color/primary" />
                     
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tv_friends_count"
@@ -55,7 +55,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="6dp"
                     android:text="120"
-                    android:textColor="@color/brown_primary"
+                    android:textColor="@color/primary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -164,7 +164,7 @@
                     android:textColor="@color/white"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    app:backgroundTint="@color/brown_primary"
+                    app:backgroundTint="@color/primary"
                     app:cornerRadius="24dp" />
 
                 <!-- Chat Button (Visible only when Friend) -->
@@ -181,8 +181,8 @@
                     app:iconGravity="textStart"
                     app:iconPadding="0dp"
                     app:iconSize="24dp"
-                    app:iconTint="@color/brown_primary"
-                    app:strokeColor="@color/brown_primary"
+                    app:iconTint="@color/primary"
+                    app:strokeColor="@color/primary"
                     app:strokeWidth="1dp" />
             </LinearLayout>
 
@@ -192,16 +192,16 @@
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_marginTop="24dp"
-                android:background="@color/surface_bg"
+                android:background="@color/surface"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/layout_action_buttons"
-                app:tabIndicatorColor="@color/brown_primary"
+                app:tabIndicatorColor="@color/primary"
                 app:tabIndicatorHeight="3dp"
                 app:tabMode="fixed"
                 app:tabGravity="fill"
                 app:tabRippleColor="@color/surface_container"
-                app:tabSelectedTextColor="@color/brown_primary"
+                app:tabSelectedTextColor="@color/primary"
                 app:tabTextAppearance="@style/ProfileTabTextStyle"
                 app:tabTextColor="@color/on_surface_variant">
 
@@ -249,7 +249,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    app:cardBackgroundColor="@color/surface_bg"
+                    app:cardBackgroundColor="@color/surface"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="2dp"
                     app:cardPreventCornerOverlap="true"
@@ -335,7 +335,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    app:cardBackgroundColor="@color/surface_bg"
+                    app:cardBackgroundColor="@color/surface"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="2dp"
                     app:cardPreventCornerOverlap="true"
@@ -421,7 +421,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:layout_marginEnd="8dp"
-                    app:cardBackgroundColor="@color/surface_bg"
+                    app:cardBackgroundColor="@color/surface"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="2dp"
                     app:cardPreventCornerOverlap="true"
@@ -506,7 +506,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="16dp"
-                    app:cardBackgroundColor="@color/surface_bg"
+                    app:cardBackgroundColor="@color/surface"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="2dp"
                     app:cardPreventCornerOverlap="true"
@@ -672,7 +672,7 @@
             android:layout_height="wrap_content"
             android:contentDescription="Create Post"
             android:src="@drawable/ic_create"
-            app:backgroundTint="@color/brown_primary"
+            app:backgroundTint="@color/primary"
             app:tint="@android:color/white"
             app:layout_anchor="@id/bottomNavigation"
             app:layout_anchorGravity="center"

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <!-- Nền màu #FCF9F8 (được định nghĩa là surface_bg trong colors.xml) -->
+    <solid android:color="@color/surface"/>
+</shape>

@@ -116,11 +116,10 @@ public class ProfileActivity extends AppCompatActivity {
 
         viewModel.getProfileData().observe(this, profile -> {
             if (profile != null) {
-                if (profile.getFirstName() != null && profile.getLastName() != null) {
-                    tvProfileName.setText(profile.getFirstName() + " " + profile.getLastName());
-                } else if (profile.getUsername() != null) {
-                    tvProfileName.setText(profile.getUsername());
-                }
+
+                String firstName = profile.getFirstName() != null ? profile.getFirstName() : "";
+                String lastName = profile.getLastName() != null ? profile.getLastName() : "";
+                tvProfileName.setText(firstName +""+ lastName);
                 
                 String locationInfo = profile.getCity() != null ? profile.getCity() : "Hanoi";
                 if (profile.getDob() != null) {
@@ -167,20 +166,20 @@ public class ProfileActivity extends AppCompatActivity {
             switch (state) {
                 case NOT_FRIEND:
                     btnFriendPrimary.setText("Add Friend");
-                    btnFriendPrimary.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.brown_primary)));
+                    btnFriendPrimary.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.primary)));
                     btnFriendPrimary.setTextColor(ContextCompat.getColor(this, R.color.white));
                     btnFriendChat.setVisibility(View.GONE);
                     break;
                 case REQUEST_SENT:
                     btnFriendPrimary.setText("Cancel");
                     btnFriendPrimary.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.surface_container)));
-                    btnFriendPrimary.setTextColor(ContextCompat.getColor(this, R.color.brown_primary));
+                    btnFriendPrimary.setTextColor(ContextCompat.getColor(this, R.color.primary));
                     btnFriendChat.setVisibility(View.GONE);
                     break;
                 case FRIEND:
                     btnFriendPrimary.setText("Friend ✓");
                     btnFriendPrimary.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.surface_container)));
-                    btnFriendPrimary.setTextColor(ContextCompat.getColor(this, R.color.brown_primary));
+                    btnFriendPrimary.setTextColor(ContextCompat.getColor(this, R.color.primary));
                     btnFriendChat.setVisibility(View.VISIBLE);
                     break;
                 default:

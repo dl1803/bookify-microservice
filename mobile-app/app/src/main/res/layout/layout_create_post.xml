@@ -54,7 +54,7 @@
             android:src="@drawable/ic_image"
             app:layout_constraintStart_toStartOf="@id/etPostInput"
             app:layout_constraintTop_toBottomOf="@id/etPostInput"
-            app:tint="@color/brown_bold" />
+            app:tint="@color/tertiary" />
 
         <!-- Nút đính kèm Sách -->
         <ImageView
@@ -68,7 +68,7 @@
             app:layout_constraintBottom_toBottomOf="@id/btnAttachImage"
             app:layout_constraintStart_toEndOf="@id/btnAttachImage"
             app:layout_constraintTop_toTopOf="@id/btnAttachImage"
-            app:tint="@color/brown_bold" />
+            app:tint="@color/tertiary" />
 
         <!-- Nút Đăng  -->
         <com.google.android.material.button.MaterialButton
@@ -79,7 +79,7 @@
             android:textAllCaps="false"
             android:textSize="14sp"
             app:cornerRadius="20dp"
-            app:backgroundTint="@color/brown_primary"
+            app:backgroundTint="@color/primary"
             android:textColor="@color/white"
             app:layout_constraintBottom_toBottomOf="@id/btnAttachImage"
             app:layout_constraintEnd_toEndOf="parent"

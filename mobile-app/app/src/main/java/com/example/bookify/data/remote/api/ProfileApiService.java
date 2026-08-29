@@ -14,13 +14,13 @@ import retrofit2.http.Part;
 
 public interface ProfileApiService {
     
-    @GET("/api/profile/users/my-profile")
+    @GET("/api/v1/profile/users/my-profile")
     Single<ApiResponse<UserProfileResponse>> getMyProfile();
 
-    @PUT("/api/profile/users/my-profile")
+    @PUT("/api/v1/profile/users/my-profile")
     Single<ApiResponse<UserProfileResponse>> updateMyProfile(@Body UpdateProfileRequest request);
 
     @Multipart
-    @PUT("/api/profile/users/avatar")
+    @PUT("/api/v1/profile/users/avatar")
     Single<ApiResponse<UserProfileResponse>> updateAvatar(@Part MultipartBody.Part file);
 }
