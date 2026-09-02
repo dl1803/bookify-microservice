@@ -45,8 +45,10 @@
 *Công nghệ: Spring Data Neo4j*
 
 ### Node: `:user_profile`
+> **Nguyên tắc thiết kế:** Node độc lập nhẹ (lightweight), **không** map collection quan hệ (`@Relationship List<...>`) vào entity Java để tránh nạp toàn bộ graph vào bộ nhớ (OOM/Lazy loading overhead). Toàn bộ thao tác kết bạn, truy vấn bạn bè và đếm số lượng được xử lý qua Custom Cypher Queries.
+
 * `id`: String [UUID, Internal ID]
-* `userId`: String [Index - Liên kết với `user.id` bên MySQL]
+* `userId`: String [Index, UNIQUE - Liên kết trực tiếp với `user.id` bên MySQL/JWT]
 * `username`: String
 * `email`: String
 * `firstName`: String
@@ -58,16 +60,30 @@
 
 ### Relationships:
 * `(:user_profile)-[:FOLLOWS { createdDate: Instant }]->(:user_profile)`
-* `(:user_profile)-[:FRIEND_WITH { status: 'PENDING' | 'ACCEPTED' }]->(:user_profile)`
+* `(:user_profile)-[:FRIEND_WITH { requestId: String, status: 'PENDING' | 'ACCEPTED', createdDate: Instant }]->(:user_profile)`
+  * **Vòng đời quan hệ:**
+    * *Gửi lời mời:* Tạo directed relationship `(sender)-[:FRIEND_WITH {status: 'PENDING', ...}]->(recipient)`
+    * *Chấp nhận:* Cập nhật `SET r.status = 'ACCEPTED'`
+    * *Từ chối / Hủy lời mời / Hủy kết bạn:* Thực hiện **`DELETE r`** (xóa hoàn toàn relationship khỏi đồ thị để giữ graph sạch và câu Cypher đơn giản, nhanh chóng).
+    * *Không có relationship giữa 2 node:* Mặc định coi là người lạ (`NONE`).
+  * **Truy vấn bạn bè:** Dùng cú pháp vô hướng `(me)-[:FRIEND_WITH {status: 'ACCEPTED'}]-(friend)` để tự động duyệt cả 2 chiều sender/recipient.
 * `(:user_profile)-[:BLOCKS { createdDate: Instant }]->(:user_profile)`
+  * Khi chặn (Block): Tạo relationship `BLOCKS` và đồng thời xóa quan hệ `FRIEND_WITH` nếu đang có.
+  * Khi bỏ chặn: Xóa relationship `BLOCKS`.
 
 ### Node: `:report` *(Báo cáo người dùng)*
 * `id`: String [UUID]
-* `reporterId`: String [Index - Người báo cáo]
-* `targetProfileId`: String [Index - Người bị báo cáo]
-* `reason`: String
-* `description`: String
-* `createdDate`: Instant
+* `reporterId`: String [Index - userId người gửi báo cáo]
+* `targetUserId`: String [Index - userId người bị báo cáo]
+* `reason`: String [Enum: `SPAM`, `HARASSMENT`, `FAKE_ACCOUNT`, `INAPPROPRIATE_CONTENT`, `OTHER`]
+* `description`: String [Nội dung mô tả chi tiết]
+* `createdDate`: Instant [Thời điểm tạo báo cáo, mặc định `now()`]
+
+### Khuyến nghị Cypher Indexes:
+```cypher
+CREATE CONSTRAINT user_profile_userId_unique IF NOT EXISTS FOR (u:user_profile) REQUIRE u.userId IS UNIQUE;
+CREATE INDEX report_target_idx IF NOT EXISTS FOR (r:report) ON (r.targetUserId);
+```
 
 ---
 
@@ -77,15 +93,22 @@
 ### Collection: `post`
 * `id`: String [PK, MongoId]
 * `userId`: String [Index - Người đăng bài]
-* `bookId`: String [Bổ sung: ID sách được review nếu có]
-* `content`: String
-* `images`: Array[String] [Bổ sung: Danh sách ảnh đính kèm]
-* `likesCount`: Long [Bổ sung: Đếm nhanh số lượt like]
-* `commentsCount`: Long [Bổ sung: Đếm nhanh số comment]
+* `postType`: String [Index - Loại bài viết: `REVIEW` / `PROGRESS` / `QUOTE` / `GENERAL`]
+* `bookId`: String [Index, Nullable - ID sách gắn kèm (bắt buộc cho REVIEW/PROGRESS/QUOTE)]
+* `content`: String [Nội dung bài viết / review]
+* `images`: Array[String] [Danh sách URL ảnh đính kèm]
+* `rating`: Double [Nullable - Điểm đánh giá sao 0.5–5.0, dùng cho postType REVIEW]
+* `progressPercent`: Integer [Nullable - Tiến độ đọc %, dùng cho postType PROGRESS]
+* `pagesRead`: Integer [Nullable - Số trang đã đọc, dùng cho postType PROGRESS]
+* `totalPages`: Integer [Nullable - Tổng số trang, dùng cho postType PROGRESS]
+* `quoteText`: String [Nullable - Nội dung trích dẫn, dùng cho postType QUOTE]
+* `quoteTheme`: String [Nullable - Theme hiển thị: `WARM` / `OCEAN` / `FOREST` / `MIDNIGHT`]
+* `likesCount`: Long [DEFAULT 0 - Đếm nhanh số lượt like]
+* `commentsCount`: Long [DEFAULT 0 - Đếm nhanh số comment]
 * `createdDate`: Instant
 * `modifiedDate`: Instant
 
-### Collection: `post_comment` *(Bổ sung)*
+### Collection: `post_comment`
 * `id`: String [PK, MongoId]
 * `postId`: String [Index]
 * `userId`: String [Index]
@@ -93,13 +116,13 @@
 * `content`: String
 * `createdDate`: Instant
 
-### Collection: `post_like` *(Bổ sung)*
+### Collection: `post_like`
 * `id`: String [PK, MongoId]
 * `postId`: String [Index]
 * `userId`: String [Index]
 * `createdDate`: Instant
 
-### Collection: `post_report` *(Bổ sung)*
+### Collection: `post_report`
 * `id`: String [PK, MongoId]
 * `postId`: String [Index]
 * `userId`: String [Index - Người báo cáo]
@@ -164,15 +187,15 @@
 * `id`: String [PK, MongoId]
 * `recipientId`: String [Index - Người nhận]
 * `senderId`: String [Người gây ra tương tác]
-* `type`: String (`POST_LIKE`, `NEW_COMMENT`, `FOLLOW`, `MESSAGE`)
-* `targetId`: String [ID của post/comment/conversation]
+* `type`: String (`POST_LIKE`, `NEW_COMMENT`, `COMMENT_REPLY`, `FRIEND_REQUEST`, `FRIEND_ACCEPTED`, `MESSAGE`, `MESSAGE_REACTION`, `BOOK_RECOMMENDATION`, `SYSTEM`)
+* `targetId`: String [ID của post/comment/conversation/book]
 * `content`: String [Nội dung hiển thị thông báo]
 * `isRead`: Boolean [DEFAULT false]
 * `createdDate`: Instant
 
 ---
 
-## 7. Book Service (MongoDB - Thiết kế mới)
+## 7. Book Service (MongoDB - Core Book Engine)
 *Công nghệ: Spring Data MongoDB*
 
 ### Collection: `book`
@@ -184,26 +207,51 @@
 * `synopsis`: String
 * `genres`: Array[String]
 * `publishedYear`: Integer
+* `pageCount`: Integer [Tổng số trang]
 * `ratingAvg`: Double
 * `ratingCount`: Long [DEFAULT 0]
 * `createdDate`: Instant
 
-### Collection: `book_rating` *(Bổ sung)*
+### Collection: `book_rating`
 * `id`: String [PK, MongoId]
 * `bookId`: String [Index]
 * `userId`: String [Index]
-* `rating`: Double
+* `rating`: Double [0.5–5.0]
 * `createdDate`: Instant
+* Compound Index: (`bookId`, `userId`) [UNIQUE]
 
-### Collection: `bookshelf_entry` *(Bổ sung)*
+### Collection: `bookshelf_entry`
 * `id`: String [PK, MongoId]
 * `userId`: String [Index]
 * `bookId`: String [Index]
 * `status`: String (`WANT_TO_READ` / `READING` / `READ`)
 * `progress`: Integer [0-100]
+* `currentPage`: Integer [Nullable - Số trang hiện tại đang đọc]
 * `startDate`: Instant [Nullable]
 * `finishDate`: Instant [Nullable]
 * `addedDate`: Instant
+
+### Collection: `custom_shelf` *(Kệ sách tùy chỉnh)*
+* `id`: String [PK, MongoId]
+* `userId`: String [Index]
+* `name`: String [Tên kệ: "Favorites", "Psychology", "Sci-Fi Classics"...]
+* `icon`: String [Tên icon: "favorite", "star", "book", "fire", "bookmark", "psychology", "science"]
+* `description`: String [Nullable]
+* `bookIds`: Array[String] [Danh sách ID sách trong kệ]
+* `createdDate`: Instant
+* Compound Index: (`userId`, `name`) [UNIQUE - Mỗi user không được trùng tên kệ]
+
+### Collection: `reading_progress_log` *(Nhật ký tiến độ đọc)*
+* `id`: String [PK, MongoId]
+* `userId`: String [Index]
+* `bookId`: String [Index]
+* `bookshelfEntryId`: String [Index - Liên kết với bookshelf_entry]
+* `pagesRead`: Integer [Số trang đã đọc tại thời điểm ghi log]
+* `totalPages`: Integer [Tổng số trang sách]
+* `percentage`: Integer [0-100, Tiến độ %]
+* `note`: String [Nullable - Ghi chú khi cập nhật tiến độ]
+* `logDate`: LocalDate [Index - Ngày ghi log, dùng để tính Reading Streak]
+* `createdDate`: Instant
 
 ---
 

@@ -77,47 +77,54 @@ public class LoginFragment extends Fragment {
     }
 
     private void observeViewModel() {
-        //  Trạng thái Loading
+        // Trạng thái Loading
         authViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
             binding.btnLogin.setEnabled(!isLoading);
             binding.btnLogin.setText(isLoading ? "Logging in..." : getString(R.string.btn_login));
         });
 
-        //  Field Error: Username
+        // Field Error: Username
         authViewModel.getLoginUsernameError().observe(getViewLifecycleOwner(), error -> {
             binding.tilUsername.setError(error);
         });
 
-        //  Field Error: Password
+        // Field Error: Password
         authViewModel.getLoginPasswordError().observe(getViewLifecycleOwner(), error -> {
             binding.tilPassword.setError(error);
         });
 
-        //  API Error (Toast thông báo hệ thống / kết nối)
+        // API Error (Toast thông báo hệ thống / kết nối)
         authViewModel.getApiError().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
                 Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
             }
         });
 
-        //  Business Event: Chưa xác thực email -> Điều hướng sang màn hình OTP
+        // Business Event: Chưa xác thực email -> Điều hướng sang màn hình OTP
         authViewModel.getUnverifiedEmailEvent().observe(getViewLifecycleOwner(), email -> {
             if (email != null && !email.isEmpty()) {
                 authViewModel.resetUnverifiedEmailEvent();
-                Toast.makeText(requireContext(), "Please verify your email before logging in", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), "Please verify your email before logging in", Toast.LENGTH_LONG)
+                        .show();
+                // Bundle giống như chiếc hộp chứa dữ liệu dạng Key-Value,
+                // gửi đi theo lệnh chuyển màn hình (navigate),
+                // và bên nhận nhận bằng lệnh (getArguments().getString("key")) để sử dụng ở hàm
+                // onViewCreated hoặc onCreate.
                 Bundle bundle = new Bundle();
                 bundle.putString("email", email);
-                Navigation.findNavController(requireView()).navigate(R.id.action_loginFragment_to_otpVerifyFragment, bundle);
+                Navigation.findNavController(requireView()).navigate(R.id.action_loginFragment_to_otpVerifyFragment,
+                        bundle);
             }
         });
 
-        //  Đăng nhập thành công
+        // Đăng nhập thành công
         authViewModel.getAuthSuccessUser().observe(getViewLifecycleOwner(), userModel -> {
             if (userModel != null) {
                 binding.tilUsername.setError(null);
                 binding.tilPassword.setError(null);
 
-                Toast.makeText(requireContext().getApplicationContext(), "Login successful!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext().getApplicationContext(), "Login successful!", Toast.LENGTH_SHORT)
+                        .show();
 
                 Intent intent = new Intent(requireContext(), HomeActivity.class);
                 startActivity(intent);
@@ -125,21 +132,35 @@ public class LoginFragment extends Fragment {
             }
         });
 
-        //  TextWatchers xóa lỗi khi người dùng gõ
+        // TextWatchers xóa lỗi khi người dùng gõ
         binding.etUsername.addTextChangedListener(new android.text.TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
                 binding.tilUsername.setError(null);
             }
-            @Override public void afterTextChanged(android.text.Editable s) {}
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+            }
         });
 
         binding.etPassword.addTextChangedListener(new android.text.TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
                 binding.tilPassword.setError(null);
             }
-            @Override public void afterTextChanged(android.text.Editable s) {}
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+            }
         });
     }
 

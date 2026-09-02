@@ -707,21 +707,20 @@ Tạo user mới. Tự động gọi nội bộ Profile Service tạo profile v�
 
 ### 3.2. Friend
 
-> Neo4j Relationship: `(:user_profile)-[:FRIEND_WITH { status }]->(:user_profile)`
+> Neo4j Relationship: `(:user_profile)-[:FRIEND_WITH { requestId, status, createdDate }]->(:user_profile)`
 
-**`FriendRequestStatus` enum — Vòng đời kết bạn:**
+**`FriendStatus` enum (Lưu trữ DB):**
 
-| Giá trị | Mô tả | Chuyển tiếp được sang |
+| Giá trị | Mô tả | Chuyển tiếp |
 |---|---|---|
-| `PENDING` | Đã gửi lời mời, chờ phản hồi | `ACCEPTED`, `REJECTED`, `CANCELLED` |
-| `ACCEPTED` | Đã chấp nhận — là bạn bè | `UNFRIENDED` |
-| `REJECTED` | Đã từ chối lời mời | `PENDING` (gửi lại) |
-| `CANCELLED` | Người gửi đã hủy lời mời | `PENDING` (gửi lại) |
-| `UNFRIENDED` | Đã hủy kết bạn | `PENDING` (gửi lại) |
+| `PENDING` | Đã gửi lời mời, đang chờ phản hồi | `ACCEPTED` (chấp nhận), hoặc `DELETE` (từ chối / hủy lời mời) |
+| `ACCEPTED` | Đã chấp nhận — là bạn bè chính thức | `DELETE` (khi hủy kết bạn) |
+
+> 💡 **Cơ chế Clean Graph:** Khi từ chối lời mời (`reject`), hủy lời mời (`cancel`), hoặc hủy kết bạn (`unfriend`), hệ thống sẽ thực hiện lệnh Cypher `DELETE r` để xóa hoàn toàn quan hệ khỏi đồ thị Neo4j. Trạng thái giữa 2 người tự động quay về mặc định là `NONE`.
 
 ---
 
-#### POST `/users/{profileId}/friend-request` — Gửi lời mời kết bạn
+#### POST `/users/{targetUserId}/friend-request` — Gửi lời mời kết bạn
 
 🔒 Bearer Token
 
@@ -821,7 +820,7 @@ Tạo user mới. Tự động gọi nội bộ Profile Service tạo profile v�
 
 ---
 
-#### DELETE `/users/friends/{friendProfileId}` — Hủy kết bạn
+#### DELETE `/users/friends/{friendUserId}` — Hủy kết bạn
 
 🔒 Bearer Token
 
@@ -839,11 +838,11 @@ Tạo user mới. Tự động gọi nội bộ Profile Service tạo profile v�
 
 ---
 
-#### POST `/users/{profileId}/block` — Chặn user
+#### POST `/users/{targetUserId}/block` — Chặn user
 
 🔒 Bearer Token
 
-Chặn user sẽ tự động hủy kết bạn nếu có.
+Chặn user sẽ tự động xóa quan hệ `FRIEND_WITH` nếu đang có.
 
 **Response:**
 ```json
@@ -855,7 +854,7 @@ Chặn user sẽ tự động hủy kết bạn nếu có.
 
 ---
 
-#### DELETE `/users/{profileId}/block` — Bỏ chặn user
+#### DELETE `/users/{targetUserId}/block` — Bỏ chặn user
 
 🔒 Bearer Token
 
@@ -877,7 +876,7 @@ Chặn user sẽ tự động hủy kết bạn nếu có.
 
 ---
 
-#### POST `/users/{profileId}/report` — Báo cáo user
+#### POST `/users/{targetUserId}/report` — Báo cáo user
 
 🔒 Bearer Token
 
@@ -938,6 +937,20 @@ Gọi tự động bởi Identity Service khi user đăng ký.
 
 ---
 
+#### GET `/internal/users/{userId}/friend-ids` — Lấy danh sách ID bạn bè (nội bộ)
+
+Dùng cho Post Service để query Newsfeed của bạn bè.
+
+**Response:**
+```json
+{
+  "code": 1000,
+  "result": ["userId-1", "userId-2", "userId-3"]
+}
+```
+
+---
+
 ## 4. Post Service
 
 > **Prefix:** `/api/v1/post` → `http://localhost:8083`  
@@ -951,16 +964,54 @@ Gọi tự động bởi Identity Service khi user đăng ký.
 
 🔒 Bearer Token
 
-**Request:**
+**Request (Review):**
 ```json
 {
+  "postType": "REVIEW",
   "content": "Just finished reading 'Clean Code'. Amazing book! 📖",
-  "images": ["http://...image1.jpg", "http://...image2.jpg"],
-  "bookId": "book-mongo-id"
+  "bookId": "book-mongo-id",
+  "rating": 4.5,
+  "images": ["http://...image1.jpg"]
 }
 ```
 
-> `images` và `bookId` đều tùy chọn.
+**Request (Quote):**
+```json
+{
+  "postType": "QUOTE",
+  "content": "Thoughts on this passage...",
+  "bookId": "book-mongo-id",
+  "quoteText": "The only way to go fast is to go well.",
+  "quoteTheme": "WARM"
+}
+```
+
+**Request (Progress Update):**
+```json
+{
+  "postType": "PROGRESS",
+  "content": "Great chapter on design patterns!",
+  "bookId": "book-mongo-id",
+  "progressPercent": 65,
+  "pagesRead": 210,
+  "totalPages": 320
+}
+```
+
+**Request (General):**
+```json
+{
+  "postType": "GENERAL",
+  "content": "What are you reading this weekend?",
+  "images": ["http://...image1.jpg", "http://...image2.jpg"]
+}
+```
+
+> `postType` enum: `REVIEW`, `PROGRESS`, `QUOTE`, `GENERAL`. Default: `GENERAL`.
+> - `REVIEW`: Bắt buộc `bookId` + `rating`. Tự động upsert rating vào Book Service.
+> - `PROGRESS`: Bắt buộc `bookId` + `progressPercent`. Tự động cập nhật bookshelf entry.
+> - `QUOTE`: Bắt buộc `bookId` + `quoteText`. `quoteTheme` default `WARM` (`WARM`/`OCEAN`/`FOREST`/`MIDNIGHT`).
+> - `GENERAL`: Chỉ cần `content`, `images` và `bookId` tùy chọn.
 
 **Response:**
 ```json
@@ -968,11 +1019,21 @@ Gọi tự động bởi Identity Service khi user đăng ký.
   "code": 1000,
   "result": {
     "id": "mongo-id",
+    "postType": "REVIEW",
     "content": "Just finished reading 'Clean Code'. Amazing book! 📖",
     "userId": "uuid",
     "username": "bookworm42",
     "userAvatar": "http://...",
     "bookId": "book-mongo-id",
+    "bookTitle": "Clean Code",
+    "bookAuthor": "Robert C. Martin",
+    "bookCoverUrl": "http://...cover.jpg",
+    "rating": 4.5,
+    "progressPercent": null,
+    "pagesRead": null,
+    "totalPages": null,
+    "quoteText": null,
+    "quoteTheme": null,
     "images": ["http://...image1.jpg"],
     "likesCount": 0,
     "commentsCount": 0,
@@ -1067,6 +1128,7 @@ Lấy bài viết từ bạn bè của user, sắp xếp theo thời gian mới 
 |---|---|---|---|
 | `page` | `int` | `1` | Trang |
 | `size` | `int` | `20` | Bài/trang |
+| `type` | `string` | *all* | Lọc theo `postType`: `REVIEW`, `PROGRESS`, `QUOTE`, `GENERAL` |
 
 **Response:** Paginated `PostResponse`
 
@@ -2043,7 +2105,7 @@ Lấy bài viết từ bạn bè của user, sắp xếp theo thời gian mới 
 
 🔒 Bearer Token
 
-Lấy các post có `bookId` tương ứng.
+Lấy các post có `bookId` tương ứng và `postType = REVIEW`.
 
 **Query:** `page`, `size`, `sortBy` (`createdDate` / `likesCount`)
 
@@ -2165,6 +2227,221 @@ Lấy các post có `bookId` tương ứng.
   }
 }
 ```
+
+---
+
+### 8.4. Custom Shelves (Kệ sách tùy chỉnh)
+
+> Ngoài 3 trạng thái mặc định, user có thể tạo kệ sách riêng (Favorites, Psychology, Sci-Fi Classics...) với icon tùy chọn.
+
+---
+
+#### POST `/bookshelf/shelves` — Tạo kệ sách tùy chỉnh
+
+🔒 Bearer Token
+
+**Request:**
+```json
+{
+  "name": "Favorites",
+  "icon": "favorite",
+  "description": "My all-time favorite books"
+}
+```
+
+> `icon` enum: `favorite`, `star`, `book`, `fire`, `bookmark`, `psychology`, `science`
+> `description` tùy chọn.
+> Giới hạn tối đa 20 custom shelves / user.
+
+**Response:**
+```json
+{
+  "code": 1000,
+  "result": {
+    "id": "shelf-mongo-id",
+    "name": "Favorites",
+    "icon": "favorite",
+    "description": "My all-time favorite books",
+    "bookCount": 0,
+    "createdDate": "2026-08-16T10:00:00Z"
+  }
+}
+```
+
+**Errors:** `1030` SHELF_NAME_EXISTED, `1031` MAX_SHELVES_REACHED
+
+---
+
+#### GET `/bookshelf/shelves` — Danh sách kệ tùy chỉnh
+
+🔒 Bearer Token
+
+**Response:**
+```json
+{
+  "code": 1000,
+  "result": [
+    {
+      "id": "shelf-mongo-id",
+      "name": "Favorites",
+      "icon": "favorite",
+      "description": "My all-time favorite books",
+      "bookCount": 5,
+      "createdDate": "2026-08-16T10:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+#### GET `/bookshelf/shelves/{shelfId}` — Chi tiết kệ (kèm danh sách sách)
+
+🔒 Bearer Token
+
+**Query:** `page`, `size`
+
+**Response:**
+```json
+{
+  "code": 1000,
+  "result": {
+    "id": "shelf-mongo-id",
+    "name": "Favorites",
+    "icon": "favorite",
+    "description": "My all-time favorite books",
+    "books": {
+      "currentPage": 1, "totalPages": 1, "pageSize": 20, "totalElements": 5,
+      "data": [ { /* BookResponse */ } ]
+    }
+  }
+}
+```
+
+---
+
+#### PUT `/bookshelf/shelves/{shelfId}` — Cập nhật kệ
+
+🔒 Bearer Token
+
+**Request:**
+```json
+{
+  "name": "All-Time Favorites",
+  "icon": "star",
+  "description": "Updated description"
+}
+```
+
+> Tất cả trường tùy chọn.
+
+**Response:** `CustomShelfResponse`
+
+---
+
+#### DELETE `/bookshelf/shelves/{shelfId}` — Xóa kệ
+
+🔒 Bearer Token
+
+**Response:** `{ "code": 1000 }`
+
+---
+
+#### POST `/bookshelf/shelves/{shelfId}/books/{bookId}` — Thêm sách vào kệ
+
+🔒 Bearer Token
+
+**Response:**
+```json
+{
+  "code": 1000,
+  "message": "Book added to shelf"
+}
+```
+
+**Errors:** `1014` BOOK_NOT_FOUND, `1032` BOOK_ALREADY_IN_SHELF
+
+---
+
+#### DELETE `/bookshelf/shelves/{shelfId}/books/{bookId}` — Xóa sách khỏi kệ
+
+🔒 Bearer Token
+
+**Response:** `{ "code": 1000 }`
+
+---
+
+### 8.5. Reading Progress & Streak
+
+> Theo dõi tiến độ đọc chi tiết và tính Reading Streak (chuỗi ngày đọc liên tục).
+
+---
+
+#### POST `/bookshelf/{entryId}/progress` — Ghi log tiến độ đọc
+
+🔒 Bearer Token
+
+**Request:**
+```json
+{
+  "pagesRead": 150,
+  "totalPages": 320,
+  "note": "Finished the chapter on design patterns"
+}
+```
+
+> `percentage` được tự động tính: `(pagesRead / totalPages) * 100`.
+> Nếu `percentage == 100` → bookshelf entry tự động chuyển status sang `READ`.
+> Đồng thời cập nhật `progress` và `currentPage` trên `BookshelfEntry`.
+
+**Response:**
+```json
+{
+  "code": 1000,
+  "result": {
+    "id": "log-mongo-id",
+    "bookId": "book-mongo-id",
+    "pagesRead": 150,
+    "totalPages": 320,
+    "percentage": 47,
+    "note": "Finished the chapter on design patterns",
+    "logDate": "2026-08-16",
+    "createdDate": "2026-08-16T14:30:00Z"
+  }
+}
+```
+
+---
+
+#### GET `/bookshelf/{entryId}/progress` — Lịch sử tiến độ đọc
+
+🔒 Bearer Token
+
+**Query:** `page`, `size`
+
+**Response:** Paginated `ReadingProgressLogResponse` (sắp xếp theo `logDate` giảm dần)
+
+---
+
+#### GET `/bookshelf/reading-streak` — Thông tin Reading Streak
+
+🔒 Bearer Token
+
+**Response:**
+```json
+{
+  "code": 1000,
+  "result": {
+    "currentStreak": 7,
+    "longestStreak": 21,
+    "totalReadingDays": 45,
+    "lastReadDate": "2026-08-16"
+  }
+}
+```
+
+> `currentStreak`: Số ngày đọc liên tục tính đến hôm nay. Reset về 0 nếu hôm qua không có log.
+> `longestStreak`: Kỷ lục chuỗi ngày đọc dài nhất.
 
 ---
 
