@@ -2,6 +2,8 @@ package com.dl1803.profile.dto.response;
 
 import java.time.LocalDate;
 
+import com.dl1803.profile.enums.FriendViewStatus;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -21,4 +23,6 @@ public class UserProfileResponse {
     LocalDate dob;
     String city;
     String bio;
+    int friendsCount;
+    FriendViewStatus friendViewStatus;
 }
