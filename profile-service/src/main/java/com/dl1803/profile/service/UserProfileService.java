@@ -1,6 +1,7 @@
 package com.dl1803.profile.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,9 +13,13 @@ import com.dl1803.profile.dto.request.SearchUserRequest;
 import com.dl1803.profile.dto.request.UpdateProfileRequest;
 import com.dl1803.profile.dto.response.UserProfileResponse;
 import com.dl1803.profile.entity.UserProfile;
+import com.dl1803.profile.enums.FriendViewStatus;
 import com.dl1803.profile.exception.AppException;
 import com.dl1803.profile.exception.ErrorCode;
 import com.dl1803.profile.mapper.UserProfileMapper;
+import com.dl1803.profile.projection.FriendRequestProjection;
+import com.dl1803.profile.repository.BlockRepository;
+import com.dl1803.profile.repository.FriendRepository;
 import com.dl1803.profile.repository.UserProfileRepository;
 import com.dl1803.profile.repository.httpClient.FileClient;
 
@@ -31,6 +36,18 @@ public class UserProfileService {
     UserProfileRepository userProfileRepository;
     UserProfileMapper userProfileMapper;
     FileClient fileClient;
+    FriendRepository friendRepository;
+    BlockRepository blockRepository;
+
+    private String getCurrentUserId() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getName())) {
+            return null;
+        }
+        return authentication.getName();
+    }
 
     public UserProfileResponse createProfile(ProfileCreationRequest request) {
         UserProfile userProfile = userProfileMapper.toUserProfile(request);
@@ -43,14 +60,25 @@ public class UserProfileService {
         UserProfile userProfile = userProfileRepository
                 .findByUserId(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
         return userProfileMapper.toUserProfileResponse(userProfile);
     }
 
     public UserProfileResponse getProfile(String id) {
-        UserProfile userProfile =
-                userProfileRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        UserProfile userProfile = userProfileRepository
+                .findById(id) // tìm bằng id của profile
+                .or(() -> userProfileRepository.findByUserId(id)) // ...id của user
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        return userProfileMapper.toUserProfileResponse(userProfile);
+        UserProfileResponse response = userProfileMapper.toUserProfileResponse(userProfile);
+        String targetUserId = userProfile.getUserId();
+
+        // Đếm số lượng bạn bè của targetUser
+        response.setFriendsCount(friendRepository.countFriends(targetUserId));
+
+        // Tính trạng thái nút bấm giữa người xem (current) và người được xem (target)
+        response.setFriendViewStatus(calculateFriendViewStatus(getCurrentUserId(), targetUserId));
+        return response;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -59,12 +87,16 @@ public class UserProfileService {
     }
 
     public UserProfileResponse getMyProfile() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userId = authentication.getName();
+        String userId = getCurrentUserId();
         var profile = userProfileRepository
                 .findByUserId(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        return userProfileMapper.toUserProfileResponse(profile);
+
+        UserProfileResponse response = userProfileMapper.toUserProfileResponse(profile);
+        response.setFriendsCount(friendRepository.countFriends(userId));
+        response.setFriendViewStatus(null); // trang của chính mình kh cần nút kết bạn
+
+        return response;
     }
 
     public UserProfileResponse updateMyProfile(UpdateProfileRequest request) {
@@ -117,5 +149,41 @@ public class UserProfileService {
         List<UserProfile> profiles = userProfileRepository.findAllByUserIdIn(userIds);
 
         return userProfileMapper.toListUserProfileResponse(profiles);
+    }
+
+    private FriendViewStatus calculateFriendViewStatus(String currentUserId, String targetUserId) {
+        // Nếu chưa đăng nhập hoặc đang xem profile của chính mình -> null
+        if (currentUserId == null || currentUserId.equals(targetUserId)) {
+            return null;
+        }
+
+        // Nếu 1 trong 2 người đã chặn nhau -> BLOCKED
+        if (blockRepository.existsBlockRelationship(currentUserId, targetUserId)) {
+            return FriendViewStatus.BLOCKED;
+        }
+
+        // Tìm quan hệ bạn bè trong Neo4j
+        Optional<FriendRequestProjection> friendshipOpt =
+                friendRepository.findFriendshipBetweenUsers(currentUserId, targetUserId);
+        if (friendshipOpt.isEmpty()) {
+            return FriendViewStatus.NONE;
+        }
+        FriendRequestProjection friendship = friendshipOpt.get();
+
+        // Nếu đã chấp nhận -> ACCEPTED
+        if ("ACCEPTED".equalsIgnoreCase(friendship.status())) {
+            return FriendViewStatus.ACCEPTED;
+        }
+
+        // Nếu đang chờ duyệt (PENDING) -> phân biệt người gửi và người nhận
+        if ("PENDING".equalsIgnoreCase(friendship.status())) {
+            if (currentUserId.equals(friendship.getSenderUserId())) {
+                return FriendViewStatus.PENDING_SENT; // Mình gửi cho họ
+            } else if (currentUserId.equals(friendship.getRecipientUserId())) {
+                return FriendViewStatus.PENDING_RECEIVED; // Họ gửi cho mình
+            }
+        }
+
+        return FriendViewStatus.NONE;
     }
 }

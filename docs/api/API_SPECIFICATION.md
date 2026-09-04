@@ -615,7 +615,7 @@ Tạo user mới. Tự động gọi nội bộ Profile Service tạo profile v�
     "city": "Ho Chi Minh",
     "bio": "I love reading books 📚",
     "friendsCount": 42,
-    "friendStatus": "NONE"
+    "friendViewStatus": "NONE"
   }
 }
 ```
@@ -623,9 +623,9 @@ Tạo user mới. Tự động gọi nội bộ Profile Service tạo profile v�
 | Trường | Mô tả |
 |---|---|
 | `friendsCount` | Tổng số bạn bè |
-| `friendStatus` | Quan hệ bạn bè giữa viewer và owner (xem enum bên dưới) |
+| `friendViewStatus` | Quan hệ bạn bè giữa viewer và owner (xem enum bên dưới) |
 
-**`friendStatus` enum:**
+**`friendViewStatus` enum:**
 
 | Giá trị | Mô tả |
 |---|---|
@@ -633,7 +633,7 @@ Tạo user mới. Tự động gọi nội bộ Profile Service tạo profile v�
 | `PENDING_SENT` | Viewer đã gửi lời mời, đang chờ owner chấp nhận |
 | `PENDING_RECEIVED` | Owner đã gửi lời mời, đang chờ viewer chấp nhận |
 | `ACCEPTED` | Đã là bạn bè |
-| `BLOCKED` | Viewer đã chặn owner |
+| `BLOCKED` | Viewer đã chặn owner (hoặc bị owner chặn) |
 
 ---
 

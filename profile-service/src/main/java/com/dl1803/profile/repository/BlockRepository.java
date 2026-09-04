@@ -33,7 +33,7 @@ public interface BlockRepository extends Neo4jRepository<UserProfile, String> {
     // Bỏ chặn: Xóa quan hệ [:BLOCKED]
     @Query("MATCH (blocker:user_profile {userId: $blockerId})-[r:BLOCKED]->(blocked:user_profile {userId: $blockedId}) "
             + "DELETE r")
-    boolean unblockUser(@Param("blockerId") String blockerId, @Param("blockedId") String blockedId);
+    void unblockUser(@Param("blockerId") String blockerId, @Param("blockedId") String blockedId);
 
     // Kiểm tra user A có đang chặn user B hay không (Có hướng) - ng chủ động mới có quyền thực thi
     @Query("MATCH (blocker:user_profile {userId: $blockerId})-[r:BLOCKED]->(blocked:user_profile {userId: $blockedId}) "

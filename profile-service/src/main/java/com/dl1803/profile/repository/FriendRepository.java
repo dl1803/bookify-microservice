@@ -54,8 +54,8 @@ public interface FriendRepository extends Neo4jRepository<UserProfile, String> {
             + "RETURN r.requestId AS requestId, "
             + "r.status AS status, "
             + "r.createdDate AS createdDate, "
-            + "sender AS sender, "
-            + "recipient AS recipient")
+            + "sender.userId AS senderUserId, "
+            + "recipient.userId AS recipientUserId")
     Optional<FriendRequestProjection> findFriendRequestByRequestId(@Param("requestId") String requestId);
 
     // Lấy danh sách bạn bè chính thức (Vô hướng, có Pageable)
@@ -85,8 +85,7 @@ public interface FriendRepository extends Neo4jRepository<UserProfile, String> {
                             + "RETURN r.requestId AS requestId, "
                             + "r.status AS status, "
                             + "r.createdDate AS createdDate, "
-                            + "sender AS sender, "
-                            + "me AS recipient "
+                            + "sender AS sender "
                             + "SKIP $skip LIMIT $limit",
             countQuery =
                     "MATCH (sender:user_profile)-[r:FRIEND_WITH {status: 'PENDING'}]->(me:user_profile {userId: $userId}) "
@@ -100,11 +99,22 @@ public interface FriendRepository extends Neo4jRepository<UserProfile, String> {
                             + "RETURN r.requestId AS requestId, "
                             + "       r.status AS status, "
                             + "       r.createdDate AS createdDate, "
-                            + "       me AS sender, "
                             + "       recipient AS recipient "
                             + "SKIP $skip LIMIT $limit",
             countQuery =
                     "MATCH (me:user_profile {userId: $userId})-[r:FRIEND_WITH {status: 'PENDING'}]->(recipient:user_profile) "
                             + "RETURN count(r)")
     Page<FriendRequestProjection> findOutgoingRequests(@Param("userId") String userId, Pageable pageable);
+
+    // Tìm chi tiết quan hệ FRIEND_WITH giữa 2 user (bất kể chiều gửi)
+    @Query("MATCH (sender:user_profile)-[r:FRIEND_WITH]->(recipient:user_profile) "
+            + "WHERE (sender.userId = $userId1 AND recipient.userId = $userId2) "
+            + "OR (sender.userId = $userId2 AND recipient.userId = $userId1) "
+            + "RETURN r.requestId AS requestId, "
+            + "r.status AS status, "
+            + "r.createdDate AS createdDate, "
+            + "sender.userId AS senderUserId, "
+            + "recipient.userId AS recipientUserId")
+    Optional<FriendRequestProjection> findFriendshipBetweenUsers(
+            @Param("userId1") String userId1, @Param("userId2") String userId2);
 }

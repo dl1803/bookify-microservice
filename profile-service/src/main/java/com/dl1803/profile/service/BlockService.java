@@ -53,7 +53,7 @@ public class BlockService {
 
     public void unblockUser(String targetUserId) {
         String currentUserId = getCurrentUserId();
-        if (!userProfileRepository.existsById(targetUserId)) {
+        if (userProfileRepository.findByUserId(targetUserId).isEmpty()) {
             throw new AppException(ErrorCode.USER_NOT_EXISTED);
         }
         if (targetUserId.equals(currentUserId)) {

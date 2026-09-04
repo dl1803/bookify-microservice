@@ -82,7 +82,7 @@ public class FriendService {
                 .findFriendRequestByRequestId(requestId)
                 .orElseThrow(() -> new AppException(ErrorCode.FRIEND_REQUEST_NOT_FOUND));
 
-        if (!getCurrentUserId().equals(friendRequestProjection.getRecipient().getUserId())) {
+        if (!getCurrentUserId().equals(friendRequestProjection.getRecipientUserId())) {
             throw new AppException(ErrorCode.NOT_FRIEND_REQUEST_RECIPIENT);
         }
 
@@ -90,7 +90,7 @@ public class FriendService {
 
         NotificationEvent event = NotificationEvent.builder()
                 .channel("FRIEND_REQUEST_ACCEPTED")
-                .recipient(friendRequestProjection.getSender().getUserId())
+                .recipient(friendRequestProjection.getSenderUserId())
                 .templateCode("FRIEND_REQUEST_ACCEPTED")
                 .param(Map.of("recipientId", getCurrentUserId(), "requestId", requestId))
                 .subject("Friend request accepted")
@@ -105,7 +105,7 @@ public class FriendService {
                 .findFriendRequestByRequestId(requestId)
                 .orElseThrow(() -> new AppException(ErrorCode.FRIEND_REQUEST_NOT_FOUND));
 
-        if (!getCurrentUserId().equals(friendRequestProjection.getRecipient().getUserId())) {
+        if (!getCurrentUserId().equals(friendRequestProjection.getRecipientUserId())) {
             throw new AppException(ErrorCode.NOT_FRIEND_REQUEST_RECIPIENT);
         }
 
@@ -117,7 +117,7 @@ public class FriendService {
                 .findFriendRequestByRequestId(requestId)
                 .orElseThrow(() -> new AppException(ErrorCode.FRIEND_REQUEST_NOT_FOUND));
 
-        if (!getCurrentUserId().equals(friendRequestProjection.getSender().getUserId())) {
+        if (!getCurrentUserId().equals(friendRequestProjection.getSenderUserId())) {
             throw new AppException(ErrorCode.NOT_FRIEND_REQUEST_SENDER);
         }
 
@@ -174,6 +174,7 @@ public class FriendService {
 
     // Lấy ds toàn bộ ID bạn bè (dành cho Internal API)
     public List<String> getAllFriendUserIds(String userId) {
+
         return friendRepository.findAllFriendUserIds(userId);
     }
 
