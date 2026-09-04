@@ -1,4 +1,4 @@
-package com.devteria.profile;
+package com.dl1803.profile;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

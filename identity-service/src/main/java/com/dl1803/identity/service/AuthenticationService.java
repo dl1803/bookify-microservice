@@ -484,7 +484,7 @@ public class AuthenticationService {
                 .body("Hello " + user.getUsername() + "!\nYour password reset code is: " + otpCode)
                 .build();
 
-        kafkaTemplate.send("notification-delivery", event);
+        kafkaTemplate.send("notification-delivery", event); //
     }
 
     @Transactional // quản lý transaction(nhóm các thao tác trên db thành 1 đơn vị thống nhất), nếu
