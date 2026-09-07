@@ -28,7 +28,7 @@ public class ProfileViewModel extends ViewModel {
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     private final MutableLiveData<FriendState> friendStateLiveData = new MutableLiveData<>(FriendState.SELF);
-    private final MutableLiveData<Integer> selectedTabLiveData = new MutableLiveData<>(2); 
+    private final MutableLiveData<Integer> selectedTabLiveData = new MutableLiveData<>(0); 
     private final MutableLiveData<Integer> followersCountLiveData = new MutableLiveData<>(1200);
 
     // Profile Data

@@ -1,7 +1,11 @@
 package com.example.bookify.utils;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -63,77 +67,504 @@ public class BookifyDialogHelper {
         dialog.show();
     }
 
-    public static void showPostMoreOptionsBottomSheet(Context context, PostModel post) {
-        BottomSheetDialog dialog = new BottomSheetDialog(context);
-        View view = LayoutInflater.from(context).inflate(R.layout.dialog_more_options_bottom_sheet, null);
-        dialog.setContentView(view);
+    // ==========================================
+    // POST MORE OPTIONS & CONFIRMATION DIALOGS
+    // ==========================================
 
-        TextView tvTitle = view.findViewById(R.id.dialogTvMoreHeaderTitle);
-        TextView tvSubtitle = view.findViewById(R.id.dialogTvMoreHeaderSubtitle);
-        tvTitle.setText("Post Options");
-        tvSubtitle.setText("Post by " + post.getUserName());
+    public static void showConfirmDeletePostDialog(Context context, Runnable onConfirmDelete) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        View view = LayoutInflater.from(context).inflate(R.layout.dialog_confirm_delete_post, null);
+        builder.setView(view);
 
-        view.findViewById(R.id.optionItemSave).setOnClickListener(v -> {
-            Toast.makeText(context, "Saved post to your library!", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-        });
+        AlertDialog dialog = builder.create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
 
-        view.findViewById(R.id.optionItemShare).setOnClickListener(v -> {
-            Intent sendIntent = new Intent();
-            sendIntent.setAction(Intent.ACTION_SEND);
-            sendIntent.putExtra(Intent.EXTRA_TEXT, "Check out " + post.getUserName() + "'s post on Bookify: \"" + post.getPostContent() + "\"");
-            sendIntent.setType("text/plain");
-            context.startActivity(Intent.createChooser(sendIntent, "Share Post via"));
-            dialog.dismiss();
-        });
+        View btnCancel = view.findViewById(R.id.btn_cancel_delete);
+        View btnConfirm = view.findViewById(R.id.btn_confirm_delete);
 
-        view.findViewById(R.id.optionItemAction).setOnClickListener(v -> {
-            Toast.makeText(context, "Viewing " + post.getUserName() + "'s profile", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-        });
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> dialog.dismiss());
+        }
 
-        view.findViewById(R.id.optionItemReport).setOnClickListener(v -> {
-            Toast.makeText(context, "Post hidden from feed", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-        });
+        if (btnConfirm != null) {
+            btnConfirm.setOnClickListener(v -> {
+                dialog.dismiss();
+                if (onConfirmDelete != null) {
+                    onConfirmDelete.run();
+                }
+                Toast.makeText(context, "Post deleted successfully", Toast.LENGTH_SHORT).show();
+            });
+        }
 
         dialog.show();
     }
 
-    public static void showProfileMoreOptionsBottomSheet(Context context, Runnable onEditProfile, Runnable onShareProfile) {
+    public static void showMyPostOptionsBottomSheet(
+            Context context,
+            PostModel post,
+            Runnable onEditPost,
+            Runnable onDeletePost) {
         BottomSheetDialog dialog = new BottomSheetDialog(context);
-        View view = LayoutInflater.from(context).inflate(R.layout.dialog_more_options_bottom_sheet, null);
+        View view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_post_options, null);
         dialog.setContentView(view);
 
-        TextView tvTitle = view.findViewById(R.id.dialogTvMoreHeaderTitle);
-        TextView tvSubtitle = view.findViewById(R.id.dialogTvMoreHeaderSubtitle);
-        tvTitle.setText("Profile Options");
-        tvSubtitle.setText("Manage your profile settings and sharing");
+        View itemEdit = view.findViewById(R.id.item_edit_post);
+        View dividerEdit = view.findViewById(R.id.divider_edit_post);
+        View itemSave = view.findViewById(R.id.item_save_post);
+        View dividerSave = view.findViewById(R.id.divider_save_post);
+        View itemViewOriginal = view.findViewById(R.id.item_view_original);
+        View dividerViewOriginal = view.findViewById(R.id.divider_view_original);
+        View itemCopyContent = view.findViewById(R.id.item_copy_content);
+        View dividerCopyContent = view.findViewById(R.id.divider_copy_content);
+        View itemCopyLink = view.findViewById(R.id.item_copy_link);
+        View dividerCopyLink = view.findViewById(R.id.divider_copy_link);
+        View itemSharePost = view.findViewById(R.id.item_share_post);
+        View dividerSharePost = view.findViewById(R.id.divider_share_post);
+        View itemDeletePost = view.findViewById(R.id.item_delete_post);
+        View dividerDeletePost = view.findViewById(R.id.divider_delete_post);
+        View itemReportPost = view.findViewById(R.id.item_report_post);
 
-        TextView tvTitle1 = view.findViewById(R.id.tvOptionTitle1);
-        TextView tvSub1 = view.findViewById(R.id.tvOptionSubtitle1);
-        ImageView imgIcon1 = view.findViewById(R.id.imgOptionIcon1);
-        tvTitle1.setText("Edit Profile");
-        tvSub1.setText("Update name, avatar, and bio");
-        imgIcon1.setImageResource(R.drawable.ic_profile);
+        // My Posts: Hiện Edit Post, Copy Link, Share Post, Delete Post
+        if (itemEdit != null) {
+            itemEdit.setVisibility(View.VISIBLE);
+            itemEdit.setOnClickListener(v -> {
+                dialog.dismiss();
+                if (onEditPost != null) {
+                    onEditPost.run();
+                } else {
+                    Toast.makeText(context, "Edit post will be available in a future update", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        if (dividerEdit != null) dividerEdit.setVisibility(View.VISIBLE);
 
-        TextView tvTitle2 = view.findViewById(R.id.tvOptionTitle2);
-        TextView tvSub2 = view.findViewById(R.id.tvOptionSubtitle2);
-        tvTitle2.setText("Share Profile Link");
-        tvSub2.setText("Send your profile link to friends");
+        if (itemSave != null) itemSave.setVisibility(View.GONE);
+        if (dividerSave != null) dividerSave.setVisibility(View.GONE);
+        if (itemViewOriginal != null) itemViewOriginal.setVisibility(View.GONE);
+        if (dividerViewOriginal != null) dividerViewOriginal.setVisibility(View.GONE);
+        if (itemCopyContent != null) itemCopyContent.setVisibility(View.GONE);
+        if (dividerCopyContent != null) dividerCopyContent.setVisibility(View.GONE);
 
-        view.findViewById(R.id.optionItemAction).setVisibility(View.GONE);
-        view.findViewById(R.id.optionItemReport).setVisibility(View.GONE);
+        if (itemCopyLink != null) {
+            itemCopyLink.setVisibility(View.VISIBLE);
+            itemCopyLink.setOnClickListener(v -> {
+                dialog.dismiss();
+                ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("Post Link", "https://bookify.app/posts/" + (post != null ? post.getUserName() : "me"));
+                if (clipboard != null) clipboard.setPrimaryClip(clip);
+                Toast.makeText(context, "Post link copied to clipboard!", Toast.LENGTH_SHORT).show();
+            });
+        }
+        if (dividerCopyLink != null) dividerCopyLink.setVisibility(View.VISIBLE);
 
-        view.findViewById(R.id.optionItemSave).setOnClickListener(v -> {
-            dialog.dismiss();
-            if (onEditProfile != null) onEditProfile.run();
-        });
+        if (itemSharePost != null) {
+            itemSharePost.setVisibility(View.VISIBLE);
+            itemSharePost.setOnClickListener(v -> {
+                dialog.dismiss();
+                if (post != null) {
+                    Intent sendIntent = new Intent(Intent.ACTION_SEND);
+                    sendIntent.putExtra(Intent.EXTRA_TEXT, "Check out my post on Bookify:\n\"" + post.getPostContent() + "\"");
+                    sendIntent.setType("text/plain");
+                    context.startActivity(Intent.createChooser(sendIntent, "Share Post via"));
+                }
+            });
+        }
+        if (dividerSharePost != null) dividerSharePost.setVisibility(View.VISIBLE);
 
-        view.findViewById(R.id.optionItemShare).setOnClickListener(v -> {
-            dialog.dismiss();
-            if (onShareProfile != null) onShareProfile.run();
-        });
+        if (itemDeletePost != null) {
+            itemDeletePost.setVisibility(View.VISIBLE);
+            itemDeletePost.setOnClickListener(v -> {
+                dialog.dismiss();
+                showConfirmDeletePostDialog(context, onDeletePost);
+            });
+        }
+        if (dividerDeletePost != null) dividerDeletePost.setVisibility(View.GONE);
+
+        if (itemReportPost != null) itemReportPost.setVisibility(View.GONE);
+
+        dialog.show();
+    }
+
+    public static void showMyPostOptionsBottomSheet(
+            Context context,
+            PostModel post,
+            Runnable onDeletePost) {
+        showMyPostOptionsBottomSheet(context, post, null, onDeletePost);
+    }
+
+    public static void showSavedPostOptionsBottomSheet(
+            Context context,
+            PostModel post,
+            Runnable onRemoveSaved,
+            Runnable onViewOriginalPost,
+            Runnable onCopyContent,
+            Runnable onSharePost) {
+        BottomSheetDialog dialog = new BottomSheetDialog(context);
+        View view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_post_options, null);
+        dialog.setContentView(view);
+
+        View itemEdit = view.findViewById(R.id.item_edit_post);
+        View dividerEdit = view.findViewById(R.id.divider_edit_post);
+        View itemSave = view.findViewById(R.id.item_save_post);
+        TextView tvSaveTitle = view.findViewById(R.id.tv_save_title);
+        ImageView imgSaveIcon = view.findViewById(R.id.img_save_icon);
+        View dividerSave = view.findViewById(R.id.divider_save_post);
+        View itemViewOriginal = view.findViewById(R.id.item_view_original);
+        View dividerViewOriginal = view.findViewById(R.id.divider_view_original);
+        View itemCopyContent = view.findViewById(R.id.item_copy_content);
+        View dividerCopyContent = view.findViewById(R.id.divider_copy_content);
+        View itemCopyLink = view.findViewById(R.id.item_copy_link);
+        View dividerCopyLink = view.findViewById(R.id.divider_copy_link);
+        View itemSharePost = view.findViewById(R.id.item_share_post);
+        View dividerSharePost = view.findViewById(R.id.divider_share_post);
+        View itemDeletePost = view.findViewById(R.id.item_delete_post);
+        View dividerDeletePost = view.findViewById(R.id.divider_delete_post);
+        View itemReportPost = view.findViewById(R.id.item_report_post);
+
+        // Saved: Ẩn Edit Post, Hiện Remove from Saved, View Original Post, Copy Quote/Text, Copy Link, Share Post
+        if (itemEdit != null) itemEdit.setVisibility(View.GONE);
+        if (dividerEdit != null) dividerEdit.setVisibility(View.GONE);
+        if (itemSave != null) {
+            itemSave.setVisibility(View.VISIBLE);
+            if (tvSaveTitle != null) tvSaveTitle.setText("Remove from Saved");
+            if (imgSaveIcon != null) imgSaveIcon.setImageResource(R.drawable.ic_bookmark_remove);
+            itemSave.setOnClickListener(v -> {
+                dialog.dismiss();
+                if (onRemoveSaved != null) {
+                    onRemoveSaved.run();
+                } else {
+                    Toast.makeText(context, "Removed from saved posts", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        if (dividerSave != null) dividerSave.setVisibility(View.VISIBLE);
+
+        if (itemViewOriginal != null) {
+            itemViewOriginal.setVisibility(View.VISIBLE);
+            itemViewOriginal.setOnClickListener(v -> {
+                dialog.dismiss();
+                if (onViewOriginalPost != null) {
+                    onViewOriginalPost.run();
+                } else {
+                    String author = post != null ? post.getUserName() : "author";
+                    Toast.makeText(context, "Viewing original post by " + author, Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        if (dividerViewOriginal != null) dividerViewOriginal.setVisibility(View.VISIBLE);
+
+        if (itemCopyContent != null) {
+            itemCopyContent.setVisibility(View.VISIBLE);
+            itemCopyContent.setOnClickListener(v -> {
+                dialog.dismiss();
+                if (onCopyContent != null) {
+                    onCopyContent.run();
+                } else {
+                    ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                    String textToCopy = post != null ? post.getPostContent() : "";
+                    ClipData clip = ClipData.newPlainText("Quote/Text", textToCopy);
+                    if (clipboard != null) clipboard.setPrimaryClip(clip);
+                    Toast.makeText(context, "Quote / text copied to clipboard!", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        if (dividerCopyContent != null) dividerCopyContent.setVisibility(View.VISIBLE);
+
+        if (itemCopyLink != null) {
+            itemCopyLink.setVisibility(View.VISIBLE);
+            itemCopyLink.setOnClickListener(v -> {
+                dialog.dismiss();
+                ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("Post Link", "https://bookify.app/posts/" + (post != null ? post.getUserName() : "saved"));
+                if (clipboard != null) clipboard.setPrimaryClip(clip);
+                Toast.makeText(context, "Post link copied to clipboard!", Toast.LENGTH_SHORT).show();
+            });
+        }
+        if (dividerCopyLink != null) dividerCopyLink.setVisibility(View.VISIBLE);
+
+        if (itemSharePost != null) {
+            itemSharePost.setVisibility(View.VISIBLE);
+            itemSharePost.setOnClickListener(v -> {
+                dialog.dismiss();
+                if (onSharePost != null) {
+                    onSharePost.run();
+                } else {
+                    if (post != null) {
+                        Intent sendIntent = new Intent(Intent.ACTION_SEND);
+                        sendIntent.putExtra(Intent.EXTRA_TEXT, "Check out this quote on Bookify:\n\"" + post.getPostContent() + "\"\n— " + post.getBookTitle() + " by " + post.getBookAuthor());
+                        sendIntent.setType("text/plain");
+                        context.startActivity(Intent.createChooser(sendIntent, "Share Post via"));
+                    }
+                }
+            });
+        }
+        if (dividerSharePost != null) dividerSharePost.setVisibility(View.GONE);
+
+        if (itemDeletePost != null) itemDeletePost.setVisibility(View.GONE);
+        if (dividerDeletePost != null) dividerDeletePost.setVisibility(View.GONE);
+        if (itemReportPost != null) itemReportPost.setVisibility(View.GONE);
+
+        dialog.show();
+    }
+
+    public static void showFeedOtherPostOptionsBottomSheet(
+            Context context,
+            PostModel post,
+            Runnable onToggleSave,
+            Runnable onCopyLink,
+            Runnable onSharePost,
+            Runnable onReportPost) {
+        BottomSheetDialog dialog = new BottomSheetDialog(context);
+        View view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_post_options, null);
+        dialog.setContentView(view);
+
+        View itemEdit = view.findViewById(R.id.item_edit_post);
+        View dividerEdit = view.findViewById(R.id.divider_edit_post);
+        View itemSave = view.findViewById(R.id.item_save_post);
+        TextView tvSaveTitle = view.findViewById(R.id.tv_save_title);
+        ImageView imgSaveIcon = view.findViewById(R.id.img_save_icon);
+        View dividerSave = view.findViewById(R.id.divider_save_post);
+        View itemViewOriginal = view.findViewById(R.id.item_view_original);
+        View dividerViewOriginal = view.findViewById(R.id.divider_view_original);
+        View itemCopyContent = view.findViewById(R.id.item_copy_content);
+        View dividerCopyContent = view.findViewById(R.id.divider_copy_content);
+        View itemCopyLink = view.findViewById(R.id.item_copy_link);
+        View dividerCopyLink = view.findViewById(R.id.divider_copy_link);
+        View itemSharePost = view.findViewById(R.id.item_share_post);
+        View dividerSharePost = view.findViewById(R.id.divider_share_post);
+        View itemDeletePost = view.findViewById(R.id.item_delete_post);
+        View dividerDeletePost = view.findViewById(R.id.divider_delete_post);
+        View itemReportPost = view.findViewById(R.id.item_report_post);
+
+        // Feed/Other: Ẩn Edit Post, Hiện Save/Unsave, Copy Link, Share Post, Report Post
+        if (itemEdit != null) itemEdit.setVisibility(View.GONE);
+        if (dividerEdit != null) dividerEdit.setVisibility(View.GONE);
+        if (itemSave != null) {
+            itemSave.setVisibility(View.VISIBLE);
+            boolean isAlreadySaved = post != null && post.isSaved();
+            if (tvSaveTitle != null) tvSaveTitle.setText(isAlreadySaved ? "Remove from Saved" : "Save Post");
+            if (imgSaveIcon != null) imgSaveIcon.setImageResource(isAlreadySaved ? R.drawable.ic_bookmark_remove : R.drawable.ic_bookmark);
+            itemSave.setOnClickListener(v -> {
+                dialog.dismiss();
+                if (onToggleSave != null) {
+                    onToggleSave.run();
+                } else {
+                    if (post != null) post.setSaved(!isAlreadySaved);
+                    Toast.makeText(context, isAlreadySaved ? "Removed from saved" : "Saved post to your library!", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        if (dividerSave != null) dividerSave.setVisibility(View.VISIBLE);
+
+        if (itemViewOriginal != null) itemViewOriginal.setVisibility(View.GONE);
+        if (dividerViewOriginal != null) dividerViewOriginal.setVisibility(View.GONE);
+        if (itemCopyContent != null) itemCopyContent.setVisibility(View.GONE);
+        if (dividerCopyContent != null) dividerCopyContent.setVisibility(View.GONE);
+
+        if (itemCopyLink != null) {
+            itemCopyLink.setVisibility(View.VISIBLE);
+            itemCopyLink.setOnClickListener(v -> {
+                dialog.dismiss();
+                if (onCopyLink != null) {
+                    onCopyLink.run();
+                } else {
+                    ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clip = ClipData.newPlainText("Post Link", "https://bookify.app/posts/" + (post != null ? post.getUserName() : ""));
+                    if (clipboard != null) clipboard.setPrimaryClip(clip);
+                    Toast.makeText(context, "Link copied to clipboard!", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        if (dividerCopyLink != null) dividerCopyLink.setVisibility(View.VISIBLE);
+
+        if (itemSharePost != null) {
+            itemSharePost.setVisibility(View.VISIBLE);
+            itemSharePost.setOnClickListener(v -> {
+                dialog.dismiss();
+                if (onSharePost != null) {
+                    onSharePost.run();
+                } else {
+                    if (post != null) {
+                        Intent sendIntent = new Intent(Intent.ACTION_SEND);
+                        sendIntent.putExtra(Intent.EXTRA_TEXT, "Check out " + post.getUserName() + "'s post on Bookify: \"" + post.getPostContent() + "\"");
+                        sendIntent.setType("text/plain");
+                        context.startActivity(Intent.createChooser(sendIntent, "Share Post via"));
+                    }
+                }
+            });
+        }
+        if (dividerSharePost != null) dividerSharePost.setVisibility(View.VISIBLE);
+
+        if (itemDeletePost != null) itemDeletePost.setVisibility(View.GONE);
+        if (dividerDeletePost != null) dividerDeletePost.setVisibility(View.GONE);
+
+        if (itemReportPost != null) {
+            itemReportPost.setVisibility(View.VISIBLE);
+            itemReportPost.setOnClickListener(v -> {
+                dialog.dismiss();
+                if (onReportPost != null) {
+                    onReportPost.run();
+                } else {
+                    Toast.makeText(context, "Post reported. Thank you for your feedback.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        dialog.show();
+    }
+
+    public static void showPostMoreOptionsBottomSheet(Context context, PostModel post) {
+        showFeedOtherPostOptionsBottomSheet(context, post, null, null, null, null);
+    }
+
+    public static void showPostMoreOptionsBottomSheet(
+            Context context,
+            boolean isAuthor,
+            boolean isSaved,
+            Runnable onToggleSave,
+            Runnable onCopyLink,
+            Runnable onSharePost,
+            Runnable onDeletePost,
+            Runnable onReportPost) {
+        if (isAuthor) {
+            showMyPostOptionsBottomSheet(context, null, onDeletePost);
+        } else if (isSaved) {
+            showSavedPostOptionsBottomSheet(context, null, onToggleSave, null, null, onSharePost);
+        } else {
+            showFeedOtherPostOptionsBottomSheet(context, null, onToggleSave, onCopyLink, onSharePost, onReportPost);
+        }
+    }
+
+    public static void showPostMoreOptionsBottomSheet(
+            Context context,
+            boolean isAuthor,
+            boolean isSaved,
+            Runnable onToggleSave,
+            Runnable onCopyLink,
+            Runnable onSharePost,
+            Runnable onEditPost,
+            Runnable onDeletePost,
+            Runnable onReportPost) {
+        if (isAuthor) {
+            showMyPostOptionsBottomSheet(context, null, onEditPost, onDeletePost);
+        } else if (isSaved) {
+            showSavedPostOptionsBottomSheet(context, null, onToggleSave, null, null, onSharePost);
+        } else {
+            showFeedOtherPostOptionsBottomSheet(context, null, onToggleSave, onCopyLink, onSharePost, onReportPost);
+        }
+    }
+
+    public static void showProfileMoreOptionsBottomSheet(Context context, Runnable onEditProfile, Runnable onShareProfile) {
+        showProfileMoreOptionsBottomSheet(context, true, false, onEditProfile, onShareProfile, null, null, null);
+    }
+
+    public static void showProfileMoreOptionsBottomSheet(
+            Context context,
+            boolean isSelf,
+            Runnable onEditProfile,
+            Runnable onShareProfile,
+            Runnable onBlockUser,
+            Runnable onReportUser) {
+        showProfileMoreOptionsBottomSheet(context, isSelf, false, onEditProfile, onShareProfile, null, onBlockUser, onReportUser);
+    }
+
+    public static void showProfileMoreOptionsBottomSheet(
+            Context context,
+            boolean isSelf,
+            boolean isFriend,
+            Runnable onEditProfile,
+            Runnable onShareProfile,
+            Runnable onUnfriend,
+            Runnable onBlockUser,
+            Runnable onReportUser) {
+
+        BottomSheetDialog dialog = new BottomSheetDialog(context);
+        View view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_profile_options, null);
+        dialog.setContentView(view);
+
+        View itemEdit = view.findViewById(R.id.item_edit_profile);
+        View dividerEdit = view.findViewById(R.id.divider_edit);
+        View itemUnfriend = view.findViewById(R.id.item_unfriend);
+        View dividerUnfriend = view.findViewById(R.id.divider_unfriend);
+        View itemShare = view.findViewById(R.id.item_share_profile);
+        View dividerShare = view.findViewById(R.id.divider_share);
+        View itemBlock = view.findViewById(R.id.item_block_user);
+        View dividerBlock = view.findViewById(R.id.divider_block);
+        View itemReport = view.findViewById(R.id.item_report_user);
+
+        if (isSelf) {
+            // Khi ở Profile của chính mình (My Profile): Edit Profile + Share Profile
+            if (itemEdit != null) {
+                itemEdit.setVisibility(View.VISIBLE);
+                itemEdit.setOnClickListener(v -> {
+                    dialog.dismiss();
+                    if (onEditProfile != null) onEditProfile.run();
+                });
+            }
+            if (dividerEdit != null) dividerEdit.setVisibility(View.VISIBLE);
+
+            if (itemUnfriend != null) itemUnfriend.setVisibility(View.GONE);
+            if (dividerUnfriend != null) dividerUnfriend.setVisibility(View.GONE);
+
+            if (itemShare != null) {
+                itemShare.setVisibility(View.VISIBLE);
+                itemShare.setOnClickListener(v -> {
+                    dialog.dismiss();
+                    if (onShareProfile != null) onShareProfile.run();
+                });
+            }
+            if (dividerShare != null) dividerShare.setVisibility(View.GONE);
+
+            if (itemBlock != null) itemBlock.setVisibility(View.GONE);
+            if (dividerBlock != null) dividerBlock.setVisibility(View.GONE);
+            if (itemReport != null) itemReport.setVisibility(View.GONE);
+        } else {
+            // Khi ở Profile của người khác: Unfriend (nếu là bạn) + Share Profile + Block User + Report
+            if (itemEdit != null) itemEdit.setVisibility(View.GONE);
+            if (dividerEdit != null) dividerEdit.setVisibility(View.GONE);
+
+            if (isFriend) {
+                if (itemUnfriend != null) {
+                    itemUnfriend.setVisibility(View.VISIBLE);
+                    itemUnfriend.setOnClickListener(v -> {
+                        dialog.dismiss();
+                        if (onUnfriend != null) onUnfriend.run();
+                    });
+                }
+                if (dividerUnfriend != null) dividerUnfriend.setVisibility(View.VISIBLE);
+            } else {
+                if (itemUnfriend != null) itemUnfriend.setVisibility(View.GONE);
+                if (dividerUnfriend != null) dividerUnfriend.setVisibility(View.GONE);
+            }
+
+            if (itemShare != null) {
+                itemShare.setVisibility(View.VISIBLE);
+                itemShare.setOnClickListener(v -> {
+                    dialog.dismiss();
+                    if (onShareProfile != null) onShareProfile.run();
+                });
+            }
+            if (dividerShare != null) dividerShare.setVisibility(View.VISIBLE);
+
+            if (itemBlock != null) {
+                itemBlock.setVisibility(View.VISIBLE);
+                itemBlock.setOnClickListener(v -> {
+                    dialog.dismiss();
+                    if (onBlockUser != null) onBlockUser.run();
+                });
+            }
+            if (dividerBlock != null) dividerBlock.setVisibility(View.VISIBLE);
+
+            if (itemReport != null) {
+                itemReport.setVisibility(View.VISIBLE);
+                itemReport.setOnClickListener(v -> {
+                    dialog.dismiss();
+                    if (onReportUser != null) onReportUser.run();
+                });
+            }
+        }
 
         dialog.show();
     }

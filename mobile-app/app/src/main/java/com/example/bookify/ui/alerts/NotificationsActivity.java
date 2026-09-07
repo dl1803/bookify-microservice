@@ -73,12 +73,14 @@ public class NotificationsActivity extends AppCompatActivity {
         adapter.setOnNotificationClickListener(new NotificationAdapter.OnNotificationClickListener() {
             @Override
             public void onNotificationClick(NotificationModel item, int position) {
-                Toast.makeText(NotificationsActivity.this, "Opened notification: " + item.getUserName(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(NotificationsActivity.this, "Opened notification: " + item.getUserName(),
+                        Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onNotificationLongClick(NotificationModel item, int position) {
-                Toast.makeText(NotificationsActivity.this, "Notification Options for " + item.getUserName(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(NotificationsActivity.this, "Notification Options for " + item.getUserName(),
+                        Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -98,8 +100,7 @@ public class NotificationsActivity extends AppCompatActivity {
                 R.drawable.profile_avatar,
                 NotificationModel.NotificationType.LIKE,
                 true,
-                false
-        ));
+                false));
 
         list.add(new NotificationModel(
                 "n2",
@@ -109,8 +110,7 @@ public class NotificationsActivity extends AppCompatActivity {
                 R.drawable.profile_avatar,
                 NotificationModel.NotificationType.FOLLOW,
                 true,
-                false
-        ));
+                false));
 
         list.add(new NotificationModel(
                 "n3",
@@ -120,8 +120,7 @@ public class NotificationsActivity extends AppCompatActivity {
                 R.drawable.ic_book,
                 NotificationModel.NotificationType.GOAL,
                 false,
-                false
-        ));
+                false));
 
         list.add(new NotificationModel("YESTERDAY"));
         list.add(new NotificationModel(
@@ -132,8 +131,7 @@ public class NotificationsActivity extends AppCompatActivity {
                 R.drawable.profile_avatar,
                 NotificationModel.NotificationType.COMMENT,
                 false,
-                false
-        ));
+                false));
 
         list.add(new NotificationModel(
                 "n5",
@@ -143,8 +141,7 @@ public class NotificationsActivity extends AppCompatActivity {
                 R.drawable.book_cover_1,
                 NotificationModel.NotificationType.CLUB,
                 false,
-                false
-        ));
+                false));
 
         return list;
     }

@@ -76,10 +76,10 @@ public class HomeActivity extends AppCompatActivity {
                 uri -> {
                     if (uri != null) {
                         String fileName = uri.getLastPathSegment();
-                        Toast.makeText(this, "Selected Image: " + (fileName != null ? fileName : "photo.jpg"), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Selected Image: " + (fileName != null ? fileName : "photo.jpg"),
+                                Toast.LENGTH_SHORT).show();
                     }
-                }
-        );
+                });
 
         pdfPickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.GetContent(),
@@ -90,8 +90,7 @@ public class HomeActivity extends AppCompatActivity {
                         selectedBookAuthor = "PDF Document";
                         Toast.makeText(this, "Attached PDF Book: " + selectedBookTitle, Toast.LENGTH_SHORT).show();
                     }
-                }
-        );
+                });
     }
 
     private void setupTopAppBar() {
@@ -132,7 +131,8 @@ public class HomeActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.btnPost).setOnClickListener(v -> {
-            if (etPostInput == null) return;
+            if (etPostInput == null)
+                return;
             String content = etPostInput.getText().toString().trim();
             if (content.isEmpty()) {
                 Toast.makeText(this, "Please enter your thoughts before posting!", Toast.LENGTH_SHORT).show();
@@ -140,7 +140,7 @@ public class HomeActivity extends AppCompatActivity {
             }
 
             viewModel.createNewPost(content, selectedBookTitle, selectedBookAuthor, selectedBookCoverResId);
-            
+
             etPostInput.setText("");
             etPostInput.clearFocus();
             hideKeyboard();
@@ -178,7 +178,8 @@ public class HomeActivity extends AppCompatActivity {
                         PostModel post = currentPosts.get(position);
                         Intent sendIntent = new Intent();
                         sendIntent.setAction(Intent.ACTION_SEND);
-                        sendIntent.putExtra(Intent.EXTRA_TEXT, "Check out " + post.getUserName() + "'s post on Bookify: \"" + post.getPostContent() + "\"");
+                        sendIntent.putExtra(Intent.EXTRA_TEXT, "Check out " + post.getUserName()
+                                + "'s post on Bookify: \"" + post.getPostContent() + "\"");
                         sendIntent.setType("text/plain");
                         startActivity(Intent.createChooser(sendIntent, "Share Post via"));
                     }
@@ -188,7 +189,8 @@ public class HomeActivity extends AppCompatActivity {
                 public void onMoreClick(int position, View anchorView) {
                     List<PostModel> currentPosts = viewModel.getPosts().getValue();
                     if (currentPosts != null && position < currentPosts.size()) {
-                        BookifyDialogHelper.showPostMoreOptionsBottomSheet(HomeActivity.this, currentPosts.get(position));
+                        BookifyDialogHelper.showPostMoreOptionsBottomSheet(HomeActivity.this,
+                                currentPosts.get(position));
                     }
                 }
 
@@ -202,8 +204,7 @@ public class HomeActivity extends AppCompatActivity {
                                 post.getBookTitle(),
                                 post.getBookAuthor(),
                                 post.getBookCoverResId(),
-                                "4.8"
-                        );
+                                "4.8");
                     }
                 }
             });

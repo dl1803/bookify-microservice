@@ -17,7 +17,7 @@
         android:layout_height="0dp"
         android:fillViewport="true"
         android:overScrollMode="never"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavContainer"
+        app:layout_constraintBottom_toTopOf="@id/bottom_nav_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -25,40 +25,127 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="24dp">
+            android:paddingBottom="32dp">
 
-            <!-- Friends Count Badge (Top Left) -->
-            <LinearLayout
-                android:id="@+id/layout_friends_count"
+            <!-- Top App Bar -->
+            <ImageView
+                android:id="@+id/btn_menu"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:src="@drawable/ic_menu"
+                app:tint="@color/on_surface"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Nút Back -->
+            <ImageView
+                android:id="@+id/btn_back"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_arrow_back"
+                android:visibility="gone"
+                app:tint="@color/on_surface"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:visibility="gone" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_app_logo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="26dp"
-                android:layout_marginStart="16dp"
-                android:background="@drawable/bg_rounded_light_brown"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="10dp"
-                android:paddingVertical="4dp"
+                android:fontFamily="@font/playfair_display_bold"
+                app:fontFamily="@font/playfair_display_bold"
+                android:text="@string/app_name"
+                android:textColor="@color/primary"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@id/btn_menu"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-                
-                <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:contentDescription="Friends"
-                    android:src="@drawable/ic_menu_friends"
-                    app:tint="@color/primary" />
-                    
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tv_friends_count"
+                app:layout_constraintTop_toTopOf="@id/btn_menu" />
+            <ImageView
+                android:id="@+id/btn_message"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/ic_mail_outline"
+                app:tint="@color/on_surface"
+                app:layout_constraintBottom_toBottomOf="@id/btn_menu"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/btn_menu" />
+
+            <!--STAT BADGES -->
+
+            <LinearLayout
+                android:id="@+id/layout_stat_badges"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="20dp"
+                android:orientation="vertical"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btn_menu"
+            >
+                <LinearLayout
+                    android:id="@+id/layout_badge_friends"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
-                    android:text="120"
-                    android:textColor="@color/primary"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:background="@drawable/bg_rounded_light_brown"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="5dp">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:contentDescription="Friends"
+                        android:src="@drawable/ic_menu_friends"
+                        app:tint="@color/primary" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tv_friends_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="0"
+                        android:textColor="@color/on_surface"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layout_badge_books"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_rounded_light_brown"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="5dp">
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_book"
+                        app:tint="@color/primary" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tv_books_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="0"
+                        android:textColor="@color/on_surface"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
             </LinearLayout>
+
 
             <!-- More Button (Top Right) -->
             <com.google.android.material.button.MaterialButton
@@ -66,621 +153,196 @@
                 style="@style/Widget.Material3.Button.OutlinedButton.Icon"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"
                 android:contentDescription="More options"
                 android:padding="0dp"
-                app:cornerRadius="24dp"
+                app:cornerRadius="20dp"
                 app:icon="@drawable/ic_more_horiz"
                 app:iconGravity="textStart"
                 app:iconPadding="0dp"
                 app:iconSize="24dp"
-                app:iconTint="@color/tertiary"
+                app:iconTint="@color/on_surface_variant"
                 app:strokeColor="@color/outline"
                 app:strokeWidth="1dp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="@id/layout_stat_badges" />
 
             <!-- Profile Header Section -->
             <!-- Avatar -->
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/img_avatar"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
+                android:layout_width="96dp"
+                android:layout_height="96dp"
                 android:layout_marginTop="24dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/profile_avatar"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+                app:strokeColor="@color/surface_container_lowest"
+                app:strokeWidth="3dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
-                app:strokeColor="@color/surface_container"
-                app:strokeWidth="4dp" />
+                app:layout_constraintTop_toBottomOf="@id/layout_stat_badges"
+                />
 
             <!-- User Name -->
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tv_profile_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/profile_name"
+                android:layout_marginTop="12dp"
+                android:fontFamily="@font/playfair_display_bold"
+                app:fontFamily="@font/playfair_display_bold"
                 android:textColor="@color/on_surface"
-                android:textSize="24sp"
+                android:textSize="22sp"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/img_avatar" />
+                app:layout_constraintTop_toBottomOf="@id/img_avatar"
+                tools:text="Duc Loi" />
 
-            <!-- Location and DOB -->
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tv_profile_location"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginTop="4dp"
-                android:gravity="center"
-                android:textColor="@color/on_surface_variant"
-                android:textSize="12sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tv_profile_name" />
-
-            <!-- Bio -->
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tv_profile_bio"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginHorizontal="32dp"
+                android:layout_marginTop="4dp"
                 android:gravity="center"
-                android:lineSpacingExtra="4dp"
-                android:text="@string/profile_bio"
-                android:textColor="@color/on_surface"
-                android:textSize="16sp"
-                android:textStyle="italic"
+                android:textColor="@color/on_surface_variant"
+                android:textSize="13sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tv_profile_location" />
-
-            <!-- Action Buttons Section -->
+                app:layout_constraintTop_toBottomOf="@id/tv_profile_name"
+                tools:text="loitran | Read every day | Love mystery stories"
+                />
+            <!-- Nút Hành động cho Profile Người khác (Ẩn khi là chính mình) -->
             <LinearLayout
                 android:id="@+id/layout_action_buttons"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
                 android:layout_marginTop="16dp"
-                android:gravity="center_vertical"
                 android:orientation="horizontal"
+                android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tv_profile_bio">
+                app:layout_constraintTop_toBottomOf="@id/tv_profile_bio"
+                tools:visibility="visible">
 
-                <!-- Primary Friend Action Button (Add Friend / Cancel / Friend) -->
+                <!-- Nút Trạng thái bạn bè: Friends / Add Friend / Pending -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_friend_primary"
-                    android:layout_width="140dp"
-                    android:layout_height="48dp"
-                    android:layout_marginEnd="8dp"
-                    android:text="Add Friend"
-                    android:textColor="@color/white"
-                    android:textSize="14sp"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="Friends"
+                    android:textColor="@color/primary"
+                    android:textSize="13sp"
                     android:textStyle="bold"
-                    app:backgroundTint="@color/primary"
-                    app:cornerRadius="24dp" />
-
-                <!-- Chat Button (Visible only when Friend) -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_friend_chat"
-                    style="@style/Widget.Material3.Button.OutlinedButton.Icon"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:contentDescription="Chat"
-                    android:padding="0dp"
-                    android:visibility="gone"
-                    app:cornerRadius="24dp"
-                    app:icon="@drawable/ic_menu_message"
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/ic_menu_friends"
                     app:iconGravity="textStart"
-                    app:iconPadding="0dp"
-                    app:iconSize="24dp"
+                    app:iconSize="18dp"
                     app:iconTint="@color/primary"
                     app:strokeColor="@color/primary"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="1.5dp" />
+
+                <!-- Nút Nhắn tin -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_friend_chat"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="Message"
+                    android:textColor="@color/on_primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    app:backgroundTint="@color/primary"
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/ic_menu_message"
+                    app:iconGravity="textStart"
+                    app:iconSize="18dp"
+                    app:iconTint="@color/on_primary" />
             </LinearLayout>
-
-            <!-- Tabs Section -->
-            <com.google.android.material.tabs.TabLayout
-                android:id="@+id/tab_layout_profile"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_marginTop="24dp"
-                android:background="@color/surface"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/layout_action_buttons"
-                app:tabIndicatorColor="@color/primary"
-                app:tabIndicatorHeight="3dp"
-                app:tabMode="fixed"
-                app:tabGravity="fill"
-                app:tabRippleColor="@color/surface_container"
-                app:tabSelectedTextColor="@color/primary"
-                app:tabTextAppearance="@style/ProfileTabTextStyle"
-                app:tabTextColor="@color/on_surface_variant">
-
-                <com.google.android.material.tabs.TabItem
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/tab_my_posts" />
-
-                <com.google.android.material.tabs.TabItem
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/tab_currently_reading" />
-
-                <com.google.android.material.tabs.TabItem
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/tab_saved_books" />
-            </com.google.android.material.tabs.TabLayout>
-
-            <!-- Divider line under tabs -->
-            <View
-                android:id="@+id/view_tab_divider"
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:background="@color/outline_variant"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tab_layout_profile" />
-
-            <!-- Content Grid Section (Saved Books) -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/layout_books_grid"
+            <!-- THẺ STREAK & GOAL CARD (Include component) -->
+            <include
+                android:id="@+id/card_streak_goal"
+                layout="@layout/layout_streak_goal_card"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="20dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/view_tab_divider">
-
-                <!-- Row 1: Book 1 & Book 2 -->
-                <!-- Book 1 Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/card_book_1"
-                    android:layout_width="0dp"
+                app:layout_constraintTop_toBottomOf="@id/layout_action_buttons" />
+            <!-- TAB LAYOUT: My Posts | Saved -->
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tab_layout_profile"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginTop="20dp"
+                android:background="@color/background"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/card_streak_goal"
+                app:tabIndicatorColor="@color/primary"
+                app:tabIndicatorFullWidth="false"
+                app:tabIndicatorHeight="2.5dp"
+                app:tabMode="fixed"
+                app:tabGravity="fill"
+                app:tabSelectedTextColor="@color/primary"
+                app:tabTextColor="@color/on_surface_variant">
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    app:cardBackgroundColor="@color/surface"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp"
-                    app:cardPreventCornerOverlap="true"
-                    app:layout_constraintEnd_toStartOf="@id/card_book_2"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:strokeWidth="0dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="8dp">
-
-                        <!-- Image Container with Rating Badge -->
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="180dp">
-
-                            <com.google.android.material.imageview.ShapeableImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:scaleType="centerCrop"
-                                android:src="@drawable/book_cover_1"
-                                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium" />
-
-                            <!-- Rating Badge -->
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="top|end"
-                                android:layout_margin="6dp"
-                                android:background="@drawable/bg_rounded_light_brown"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingHorizontal="6dp"
-                                android:paddingVertical="3dp">
-
-                                <ImageView
-                                    android:layout_width="12dp"
-                                    android:layout_height="12dp"
-                                    android:contentDescription="Star rating"
-                                    android:src="@drawable/ic_star"
-                                    app:tint="@color/star_yellow" />
-
-                                <com.google.android.material.textview.MaterialTextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="3dp"
-                                    android:text="@string/book1_rating"
-                                    android:textColor="@color/on_surface"
-                                    android:textSize="11sp"
-                                    android:textStyle="bold" />
-                            </LinearLayout>
-                        </FrameLayout>
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:text="@string/book1_title"
-                            android:textColor="@color/on_surface"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:text="@string/book1_author"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Book 2 Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/card_book_2"
-                    android:layout_width="0dp"
+                    android:text="My Posts" />
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    app:cardBackgroundColor="@color/surface"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp"
-                    app:cardPreventCornerOverlap="true"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/card_book_1"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:strokeWidth="0dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="8dp">
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="180dp">
-
-                            <com.google.android.material.imageview.ShapeableImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:scaleType="centerCrop"
-                                android:src="@drawable/book_cover_2"
-                                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium" />
-
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="top|end"
-                                android:layout_margin="6dp"
-                                android:background="@drawable/bg_rounded_light_brown"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingHorizontal="6dp"
-                                android:paddingVertical="3dp">
-
-                                <ImageView
-                                    android:layout_width="12dp"
-                                    android:layout_height="12dp"
-                                    android:contentDescription="Star rating"
-                                    android:src="@drawable/ic_star"
-                                    app:tint="@color/star_yellow" />
-
-                                <com.google.android.material.textview.MaterialTextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="3dp"
-                                    android:text="@string/book2_rating"
-                                    android:textColor="@color/on_surface"
-                                    android:textSize="11sp"
-                                    android:textStyle="bold" />
-                            </LinearLayout>
-                        </FrameLayout>
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:text="@string/book2_title"
-                            android:textColor="@color/on_surface"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:text="@string/book2_author"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Row 2: Book 3 & Book 4 -->
-                <!-- Book 3 Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/card_book_3"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="8dp"
-                    app:cardBackgroundColor="@color/surface"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp"
-                    app:cardPreventCornerOverlap="true"
-                    app:layout_constraintEnd_toStartOf="@id/card_book_4"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/card_book_1"
-                    app:strokeWidth="0dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="8dp">
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="180dp">
-
-                            <com.google.android.material.imageview.ShapeableImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:scaleType="centerCrop"
-                                android:src="@drawable/book_cover_3"
-                                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium" />
-
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="top|end"
-                                android:layout_margin="6dp"
-                                android:background="@drawable/bg_rounded_light_brown"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingHorizontal="6dp"
-                                android:paddingVertical="3dp">
-
-                                <ImageView
-                                    android:layout_width="12dp"
-                                    android:layout_height="12dp"
-                                    android:contentDescription="Star rating"
-                                    android:src="@drawable/ic_star"
-                                    app:tint="@color/star_yellow" />
-
-                                <com.google.android.material.textview.MaterialTextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="3dp"
-                                    android:text="@string/book3_rating"
-                                    android:textColor="@color/on_surface"
-                                    android:textSize="11sp"
-                                    android:textStyle="bold" />
-                            </LinearLayout>
-                        </FrameLayout>
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:text="@string/book3_title"
-                            android:textColor="@color/on_surface"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:text="@string/book3_author"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Book 4 Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/card_book_4"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="16dp"
-                    app:cardBackgroundColor="@color/surface"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp"
-                    app:cardPreventCornerOverlap="true"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/card_book_3"
-                    app:layout_constraintTop_toBottomOf="@id/card_book_2"
-                    app:strokeWidth="0dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="8dp">
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="180dp">
-
-                            <com.google.android.material.imageview.ShapeableImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:scaleType="centerCrop"
-                                android:src="@drawable/book_cover_4"
-                                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium" />
-
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="top|end"
-                                android:layout_margin="6dp"
-                                android:background="@drawable/bg_rounded_light_brown"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingHorizontal="6dp"
-                                android:paddingVertical="3dp">
-
-                                <ImageView
-                                    android:layout_width="12dp"
-                                    android:layout_height="12dp"
-                                    android:contentDescription="Star rating"
-                                    android:src="@drawable/ic_star"
-                                    app:tint="@color/star_yellow" />
-
-                                <com.google.android.material.textview.MaterialTextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="3dp"
-                                    android:text="@string/book4_rating"
-                                    android:textColor="@color/on_surface"
-                                    android:textSize="11sp"
-                                    android:textStyle="bold" />
-                            </LinearLayout>
-                        </FrameLayout>
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:text="@string/book4_title"
-                            android:textColor="@color/on_surface"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:text="@string/book4_author"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Row 3: Add New Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/card_add_new"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="8dp"
-                    app:cardBackgroundColor="@color/surface_container"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="0dp"
-                    app:layout_constraintEnd_toStartOf="@id/card_placeholder_empty"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/card_book_3"
-                    app:strokeColor="@color/outline_variant"
-                    app:strokeWidth="1dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="234dp"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:contentDescription="Add new book"
-                            android:src="@drawable/ic_create"
-                            app:tint="@color/outline" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="@string/add_new_book"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Invisible placeholder card for grid symmetry -->
-                <View
-                    android:id="@+id/card_placeholder_empty"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_marginStart="8dp"
-                    android:visibility="invisible"
-                    app:layout_constraintBottom_toBottomOf="@id/card_add_new"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/card_add_new"
-                    app:layout_constraintTop_toTopOf="@id/card_add_new" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
+                    android:text="Saved" />
+            </com.google.android.material.tabs.TabLayout>
+            <View
+                android:id="@+id/divider_tab"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:background="@color/outline_variant_30"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tab_layout_profile" />
+            <!--  FEED POSTS RECYCLERVIEW -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_profile_feed"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:nestedScrollingEnabled="false"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/divider_tab"
+                tools:listitem="@layout/item_post_review" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
-
-    <!-- Bottom Navigation Bar Container (Identical to activity_home.xml) -->
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/bottomNavContainer"
-        android:layout_width="match_parent"
+    <!-- BOTTOM NAVIGATION BAR -->
+    <FrameLayout
+        android:id="@+id/bottom_nav_container"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <!-- Thanh Navigation -->
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
         <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottomNavigation"
+            android:id="@+id/bottom_navigation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:background="@drawable/bg_bottom_nav_rounded"
-            android:theme="@style/BottomNavTheme"
-            android:paddingTop="8dp"
-            app:elevation="0dp"
-            app:itemIconTint="#5d4037"
-            app:itemTextColor="#5d4037"
-            app:menu="@menu/bottom_nav_menu"
-            app:labelVisibilityMode="labeled" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabCreate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="Create Post"
-            android:src="@drawable/ic_create"
-            app:backgroundTint="@color/primary"
-            app:tint="@android:color/white"
-            app:layout_anchor="@id/bottomNavigation"
-            app:layout_anchorGravity="center"
-            app:fabCustomSize="60dp"
-            app:maxImageSize="32dp"
-            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
-            app:elevation="8dp"/>
-
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
+            android:background="@color/surface_container_lowest"
+            app:itemIconTint="@color/primary"
+            app:itemTextColor="@color/primary"
+            app:menu="@menu/bottom_nav_menu" />
+    </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

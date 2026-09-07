@@ -70,6 +70,80 @@ public class PostModel {
     }
 
     public void setLiked(boolean liked) {
-        isLiked = liked;
+        this.isLiked = liked;
+    }
+
+    public static final int TYPE_REVIEW = 0;
+    public static final int TYPE_QUOTE = 1;
+    public static final int TYPE_PROGRESS = 2;
+
+    private int postType = TYPE_REVIEW;
+    private float rating = 5.0f;
+    private int currentPage = 0;
+    private int totalPages = 0;
+
+    public void setPostContent(String postContent) {
+        this.postContent = postContent;
+    }
+
+    private boolean isQuote;
+    private String quoteSource;
+    private boolean isSaved;
+
+    public boolean isQuote() {
+        return isQuote || postType == TYPE_QUOTE;
+    }
+
+    public void setQuote(boolean quote) {
+        isQuote = quote;
+        if (quote) postType = TYPE_QUOTE;
+    }
+
+    public String getQuoteSource() {
+        return quoteSource;
+    }
+
+    public void setQuoteSource(String quoteSource) {
+        this.quoteSource = quoteSource;
+    }
+
+    public boolean isSaved() {
+        return isSaved;
+    }
+
+    public void setSaved(boolean saved) {
+        isSaved = saved;
+    }
+
+    public int getPostType() {
+        return postType;
+    }
+
+    public void setPostType(int postType) {
+        this.postType = postType;
+    }
+
+    public float getRating() {
+        return rating;
+    }
+
+    public void setRating(float rating) {
+        this.rating = rating;
+    }
+
+    public int getCurrentPage() {
+        return currentPage;
+    }
+
+    public void setCurrentPage(int currentPage) {
+        this.currentPage = currentPage;
+    }
+
+    public int getTotalPages() {
+        return totalPages;
+    }
+
+    public void setTotalPages(int totalPages) {
+        this.totalPages = totalPages;
     }
 }
