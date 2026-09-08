@@ -25,7 +25,9 @@ import com.example.bookify.ui.alerts.NotificationsActivity;
 import com.example.bookify.ui.auth.AuthActivity;
 import com.example.bookify.ui.home.adapter.PostAdapter;
 import com.example.bookify.ui.profile.ProfileActivity;
+import com.example.bookify.utils.BookifyBottomNavHelper;
 import com.example.bookify.utils.BookifyDialogHelper;
+import com.example.bookify.utils.BookifyHeaderHelper;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -94,13 +96,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void setupTopAppBar() {
-        MaterialToolbar topAppBar = findViewById(R.id.topAppBar);
-        if (topAppBar != null) {
-            topAppBar.setNavigationOnClickListener(v -> {
-                com.example.bookify.ui.menu.GlobalMenuDrawerFragment.newInstance()
-                        .show(getSupportFragmentManager(), "GlobalMenu");
-            });
-        }
+        BookifyHeaderHelper.setup(this);
     }
 
     private void setupCreatePostSection() {
@@ -233,43 +229,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void setupBottomNavigationAndFab() {
-        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
-        if (bottomNav != null) {
-            bottomNav.setSelectedItemId(R.id.nav_home);
-            bottomNav.setOnItemSelectedListener(item -> {
-                int itemId = item.getItemId();
-                if (itemId == R.id.nav_home) {
-                    if (rvFeed != null) {
-                        rvFeed.smoothScrollToPosition(0);
-                    }
-                    return true;
-                } else if (itemId == R.id.nav_profile) {
-                    Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
-                    startActivity(intent);
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                    return true;
-                } else if (itemId == R.id.nav_explore) {
-                    Toast.makeText(this, "Explore section coming soon!", Toast.LENGTH_SHORT).show();
-                    return false;
-                } else if (itemId == R.id.nav_alerts) {
-                    Intent intent = new Intent(HomeActivity.this, NotificationsActivity.class);
-                    startActivity(intent);
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                    return true;
-                }
-                return false;
-            });
-        }
-
-        FloatingActionButton fabCreate = findViewById(R.id.fabCreate);
-        if (fabCreate != null) {
-            fabCreate.setOnClickListener(v -> {
-                if (etPostInput != null) {
-                    etPostInput.requestFocus();
-                    showKeyboard();
-                }
-            });
-        }
+        BookifyBottomNavHelper.setup(this, BookifyBottomNavHelper.NavTab.HOME);
     }
 
     private void hideKeyboard() {
