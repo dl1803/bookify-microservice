@@ -38,6 +38,11 @@
             android:windowSoftInputMode="adjustPan" />
 
         <activity
+            android:name=".ui.connections.ConnectionsActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan" />
+
+        <activity
             android:name=".ui.alerts.NotificationsActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustPan" />

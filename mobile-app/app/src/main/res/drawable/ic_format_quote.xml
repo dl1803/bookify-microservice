@@ -1,0 +1,10 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Dấu MỞ ngoặc kép (Opening Double Quote - “) cong tròn mềm mại chuẩn Typography -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M4.5,13.5 C4.5,10.2 6.8,7.5 10.2,6.5 L10.8,8.2 C8.6,8.7 7.4,9.9 7.2,11.4 C7.6,11.2 8.2,11.1 8.8,11.1 C10.6,11.1 12,12.4 12,14.2 C12,16.1 10.4,17.6 8.4,17.6 C6.1,17.6 4.5,15.8 4.5,13.5 Z M14.5,13.5 C14.5,10.2 16.8,7.5 20.2,6.5 L20.8,8.2 C18.6,8.7 17.4,9.9 17.2,11.4 C17.6,11.2 18.2,11.1 18.8,11.1 C20.6,11.1 22,12.4 22,14.2 C22,16.1 20.4,17.6 18.4,17.6 C16.1,17.6 14.5,15.8 14.5,13.5 Z" />
+</vector>

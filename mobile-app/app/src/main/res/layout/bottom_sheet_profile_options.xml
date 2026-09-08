@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_profile_options_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet"
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="28dp">
+
+    <!-- DRAG HANDLE -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="12dp"
+        android:background="@drawable/bg_drag_handle" />
+
+    <!-- TIÊU ĐỀ BOTTOM SHEET -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_sheet_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="12dp"
+        android:fontFamily="@font/playfair_display_bold"
+        android:text="Profile Options"
+        android:textColor="@color/on_surface"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:fontFamily="@font/playfair_display_bold" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginBottom="4dp"
+        android:background="@color/outline_variant_30" />
+
+    <!-- TÙY CHỌN: CHỈNH SỬA HỒ SƠ (Chỉ hiện khi ở Profile chính mình) -->
+    <LinearLayout
+        android:id="@+id/item_edit_profile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="14dp">
+
+        <ImageView
+            android:id="@+id/img_edit_icon"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_edit"
+            app:tint="@color/on_surface_variant" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_edit_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:text="Edit Profile"
+            android:textColor="@color/on_surface"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/divider_edit"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="44dp"
+        android:background="@color/outline_variant_30" />
+
+    <!-- TÙY CHỌN: HỦY KẾT BẠN (Chỉ hiện khi xem profile người khác VÀ hai người đã là bạn bè) -->
+    <LinearLayout
+        android:id="@+id/item_unfriend"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="14dp">
+
+        <ImageView
+            android:id="@+id/img_unfriend_icon"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_person_remove"
+            app:tint="@color/on_surface_variant" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_unfriend_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:text="Unfriend"
+            android:textColor="@color/on_surface"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/divider_unfriend"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="44dp"
+        android:background="@color/outline_variant_30" />
+
+    <!-- TÙY CHỌN: CHIA SẺ TRANG CÁ NHÂN (Dùng chung cho cả chính mình và người khác) -->
+    <LinearLayout
+        android:id="@+id/item_share_profile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="14dp">
+
+        <ImageView
+            android:id="@+id/img_share_icon"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_share"
+            app:tint="@color/on_surface_variant" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_share_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:text="Share Profile"
+            android:textColor="@color/on_surface"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/divider_share"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="44dp"
+        android:background="@color/outline_variant_30" />
+
+    <!-- TÙY CHỌN: CHẶN NGƯỜI DÙNG (Chỉ hiện khi xem profile người khác) -->
+    <LinearLayout
+        android:id="@+id/item_block_user"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="14dp">
+
+        <ImageView
+            android:id="@+id/img_block_icon"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_block"
+            app:tint="@color/error" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_block_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:text="Block User"
+            android:textColor="@color/error"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/divider_block"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="44dp"
+        android:background="@color/outline_variant_30" />
+
+    <!-- TÙY CHỌN: BÁO CÁO VI PHẠM (Chỉ hiện khi xem profile người khác - Đặt ở cuối cùng với màu đỏ cảnh báo) -->
+    <LinearLayout
+        android:id="@+id/item_report_user"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="14dp">
+
+        <ImageView
+            android:id="@+id/img_report_icon"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_flag_report"
+            app:tint="@color/error" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_report_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:text="Report"
+            android:textColor="@color/error"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</LinearLayout>
