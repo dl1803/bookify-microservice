@@ -36,8 +36,11 @@ import com.example.bookify.R;
 import com.example.bookify.ui.connections.ConnectionsActivity;
 import com.example.bookify.data.model.PostModel;
 import com.example.bookify.ui.home.HomeActivity;
+import com.example.bookify.ui.menu.GlobalMenuDrawerFragment;
 import com.example.bookify.ui.profile.adapter.ProfilePostAdapter;
+import com.example.bookify.utils.BookifyBottomNavHelper;
 import com.example.bookify.utils.BookifyDialogHelper;
+import com.example.bookify.utils.BookifyHeaderHelper;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -95,11 +98,16 @@ public class ProfileActivity extends AppCompatActivity {
         imgAvatar = findViewById(R.id.img_avatar);
 
         setupAvatarPicker();
+        setupTopHeader();
         setupViewModel();
         setupProfileInteractions();
         setupTabs();
         setupProfileFeed();
         setupBottomNavigationAndFab();
+    }
+
+    private void setupTopHeader() {
+        BookifyHeaderHelper.setup(this);
     }
 
     private void setupAvatarPicker() {
@@ -177,10 +185,14 @@ public class ProfileActivity extends AppCompatActivity {
 
             if (state == ProfileViewModel.FriendState.SELF) {
                 layoutActionButtons.setVisibility(View.GONE);
+                BookifyHeaderHelper.setLeftAction(this, R.drawable.ic_menu, v -> {
+                    GlobalMenuDrawerFragment.newInstance().show(getSupportFragmentManager(), "GlobalMenu");
+                });
                 return;
             }
 
             layoutActionButtons.setVisibility(View.VISIBLE);
+            BookifyHeaderHelper.setLeftAction(this, R.drawable.ic_arrow_back, v -> finish());
 
             switch (state) {
                 case NOT_FRIEND:
@@ -515,44 +527,6 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void setupBottomNavigationAndFab() {
-        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
-        if (bottomNav != null) {
-            bottomNav.setSelectedItemId(R.id.nav_profile);
-            bottomNav.setOnItemSelectedListener(item -> {
-                int itemId = item.getItemId();
-                if (itemId == R.id.nav_home) {
-                    Intent intent = new Intent(ProfileActivity.this, HomeActivity.class);
-                    startActivity(intent);
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                    finish();
-                    return true;
-                } else if (itemId == R.id.nav_profile) {
-                    if (scrollViewContent != null) {
-                        scrollViewContent.smoothScrollTo(0, 0);
-                    }
-                    return true;
-                } else if (itemId == R.id.nav_explore) {
-                    Toast.makeText(this, "Explore feature coming soon!", Toast.LENGTH_SHORT).show();
-                    return false;
-                } else if (itemId == R.id.nav_alerts) {
-                    Intent intent = new Intent(ProfileActivity.this, NotificationsActivity.class);
-                    startActivity(intent);
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                    finish();
-                    return true;
-                }
-                return false;
-            });
-        }
-
-        FloatingActionButton fabCreate = findViewById(R.id.fabCreate);
-        if (fabCreate != null) {
-            fabCreate.setOnClickListener(v -> {
-                Intent intent = new Intent(ProfileActivity.this, HomeActivity.class);
-                startActivity(intent);
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                finish();
-            });
-        }
+        BookifyBottomNavHelper.setup(this, BookifyBottomNavHelper.NavTab.PROFILE);
     }
 }

@@ -35,8 +35,7 @@
     </style>
 
     <style name="BottomNavTheme" parent="ThemeOverlay.Material3.BottomNavigationView">
-        <!-- Đổi màu bóng nền (Active Indicator): nâu nhạt -->
-        <item name="colorSecondaryContainer">@color/surface_container</item>
+        <item name="colorSecondaryContainer">@android:color/transparent</item>
     </style>
 
     <style name="ProfileTabTextStyle" parent="TextAppearance.Material3.TitleSmall">
